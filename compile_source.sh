@@ -11,6 +11,7 @@ wget https://dl.bintray.com/boostorg/release/1.71.0/source/boost_1_71_0.tar.gz
 tar xvzf boost_1_71_0.tar.gz
 
 cd boost_1_71_0
+./bootstrap.sh
 ./b2 -j 4
 export BOOST_ROOT=/home/my_user/boost_1_71_0
 
