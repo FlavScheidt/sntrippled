@@ -1,31 +1,18 @@
-sudo apt-get update
-sudo apt-get -y upgrade
-sudo apt-get -y install git pkg-config protobuf-compiler libprotobuf-dev libssl-dev wget build-essential
-
-wget https://github.com/Kitware/CMake/releases/download/v3.13.3/cmake-3.13.3-Linux-x86_64.sh
-sudo sh cmake-3.13.3-Linux-x86_64.sh --prefix=/usr/local --exclude-subdir
-
-cmake --version 
-
-wget https://dl.bintray.com/boostorg/release/1.71.0/source/boost_1_71_0.tar.gz
-tar xvzf boost_1_71_0.tar.gz
-
-cd boost_1_71_0
+#!/bin/sh
+apt-get update
+apt-get install -y gcc g++ wget git cmake pkg-config protobuf-compiler libprotobuf-dev libssl-dev
+wget https://dl.bintray.com/boostorg/release/1.70.0/source/boost_1_70_0.tar.gz
+tar -xzf boost_1_70_0.tar.gz
+cd boost_1_70_0
 ./bootstrap.sh
-./b2 -j 4
-
-export BOOST_ROOT=/root/boost_1_71_0
-
-source ~/.profile
-
+./b2 headers
+./b2 -j 1
 cd ..
-
-git clone https://github.com/FlavScheidt/rippled.git
+git clone https://github.com/ripple/rippled.git
 cd rippled
-git checkout develop
-
+git checkout release
+export BOOST_ROOT=~/boost_1_70_0
 mkdir my_build
 cd my_build
-cmake ..
-cmake --build .
-./rippled -u
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/ripple -Dassert=ON ..
+cmake --build . --target install -- -j 1
