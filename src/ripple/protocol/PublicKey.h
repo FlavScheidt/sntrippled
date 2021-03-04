@@ -58,7 +58,7 @@ namespace ripple {
 */
 class PublicKey
 {
-protected:
+public:
     std::size_t size_ = 0;
     std::uint8_t buf_[33];  // should be large enough
 

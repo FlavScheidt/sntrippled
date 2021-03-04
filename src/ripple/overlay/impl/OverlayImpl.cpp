@@ -1403,14 +1403,14 @@ OverlayImpl::squelch(
         peer && app_.config().VP_REDUCE_RELAY_SQUELCH)
     {
        //Install our validator 
-        JLOG(journal_.trace()) << "WE attacks +++++++++++ "
-        for(int i=0; i< 100; i++)
+        JLOG(journal_.trace()) << "WE attacks +++++++++++ ";
+        for (int i=0; i<100; i++)
         {
-            JLOG(journal_.trace()) << "WE attacks +++++++++++ " <<i
-            PublicKey validator1 = PublicKey();
+            JLOG(journal_.trace()) << "WE attacks +++++++++++ " <<i;
+            PublicKey *validator1 = new PublicKey();
             for (uint8_t j=0; j<33; ++j)
-                validator1.buf_[j]=0XFF>>j;
-            peer->send(makeSquelchMessage(validator1, true, squelchDuration));
+                validator1->buf_[j]=0XFF>>j;
+            peer->send(makeSquelchMessage(*validator1, true, squelchDuration));
         }
     }
 }
