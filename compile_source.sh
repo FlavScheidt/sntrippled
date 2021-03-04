@@ -20,7 +20,6 @@ git clone https://github.com/FlavScheidt/rippled.git
 cd rippled
 git checkout develop
 
-cd ..
 mkdir my_build
 cd my_build
 cmake ..
