@@ -13,9 +13,12 @@ tar xvzf boost_1_71_0.tar.gz
 cd boost_1_71_0
 ./bootstrap.sh
 ./b2 -j 4
-export BOOST_ROOT=/home/my_user/boost_1_71_0
+
+export BOOST_ROOT=/root/boost_1_71_0
 
 source ~/.profile
+
+cd ..
 
 git clone https://github.com/FlavScheidt/rippled.git
 cd rippled
