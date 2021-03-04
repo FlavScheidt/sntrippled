@@ -8,7 +8,7 @@ cd boost_1_70_0
 ./b2 headers
 ./b2 -j 1
 cd ..
-git clone https://github.com/ripple/rippled.git
+git clone https://github.com/FlavScheidt/rippled.git
 cd rippled
 git checkout release
 export BOOST_ROOT=~/boost_1_70_0
