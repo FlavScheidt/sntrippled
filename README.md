@@ -1,3 +1,7 @@
+# Attention
+
+This is a modified version of the rippled 1.7 validator protocol. Do not use it.
+
 # The XRP Ledger
 
 The [XRP Ledger](https://xrpl.org/) is a decentralized cryptographic ledger powered by a network of peer-to-peer servers. The XRP Ledger uses a novel Byzantine Fault Tolerant consensus algorithm to settle and record transactions in a secure distributed database without a central operator.
