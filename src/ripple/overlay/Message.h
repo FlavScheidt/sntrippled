@@ -93,6 +93,11 @@ public:
         return category_;
     }
 
+    //RYCB
+    //Alteration to get the message type 
+    //to deviate the validation messages
+    int getMessageType();
+
     /** Get the validator's key */
     boost::optional<PublicKey> const&
     getValidatorKey() const

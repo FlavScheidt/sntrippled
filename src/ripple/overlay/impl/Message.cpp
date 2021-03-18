@@ -133,6 +133,17 @@ Message::compress()
     }
 }
 
+/*********************
+    RYCB
+    Alteration to get the message type 
+    to deviate the validation messages
+**********************/
+int
+Message::getMessageType() 
+{
+    return getType(buffer_.data());
+}
+
 /** Set payload header
 
     The header is a variable-sized structure that contains information about

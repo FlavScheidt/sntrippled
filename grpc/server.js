@@ -106,7 +106,7 @@ var hello_proto = grpc.loadPackageDefinition(packageDefinition).helloworld;
  */
 function sayHello(call, callback) {
   my_node.pubsub.publish(topic, uint8ArrayFromString(''+call.request.name+', Validation Tx'))
-  callback(null, {message: 'Hello ' + call.request.name});
+  callback(null, {message: 'Helloooooooooooooooooooooooooo ' + call.request.name});
 }
 
 /**
