@@ -7,3 +7,17 @@ option java_outer_classname = "ValidationProto";
 
 package validationmessage;
 
+service validationMessage
+{
+	rpc ReceiveValidation(stream ValidationMess) returns (stream ValidationMess) {}
+
+	rpc SendValidation(stream ValidationMess) returns (stream ValidationMess) {}
+}
+
+message ValidationMess
+{
+	bytes validation_message = 0;
+	//Not sure about the validator key here
+	//I guess the compressed message already has the vazlidator key
+	bytes validator_key 	= 1;
+}
