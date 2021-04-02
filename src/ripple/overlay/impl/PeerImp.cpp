@@ -34,13 +34,12 @@
 #include <ripple/beast/core/LexicalCast.h>
 #include <ripple/beast/core/SemanticVersion.h>
 #include <ripple/nodestore/DatabaseShard.h>
-
-
 #include <ripple/overlay/Cluster.h>
 #include <ripple/overlay/impl/PeerImp.h>
 #include <ripple/overlay/impl/Tuning.h>
 #include <ripple/overlay/predicates.h>
 #include <ripple/protocol/digest.h>
+
 
 #include <boost/algorithm/clamp.hpp>
 #include <boost/algorithm/string.hpp>
@@ -54,57 +53,7 @@
 #include <numeric>
 #include <sstream>
 
-#include <iostream>
-#include <string>
-
-#include <grpcpp/grpcpp.h>
-
-#include<org/xrpl/rpc/v1/helloworld.grpc.pb.h>
-
-using grpc::Channel;
-using grpc::ClientContext;
-using grpc::Status;
-using helloworld::HelloRequest;
-using helloworld::HelloReply;
-using helloworld::Greeter;
-
 using namespace std::chrono_literals;
-
-class GreeterClient {
- public:
-  GreeterClient(std::shared_ptr<Channel> channel)
-      : stub_(Greeter::NewStub(channel)) {}
-
-  // Assembles the client's payload, sends it and presents the response back
-  // from the server.
-  std::string SayHello(const std::string& user) {
-    // Data we are sending to the server.
-    HelloRequest request;
-    request.set_name(user);
-
-    // Container for the data we expect from the server.
-    HelloReply reply;
-
-    // Context for the client. It could be used to convey extra information to
-    // the server and/or tweak certain RPC behaviors.
-    ClientContext context;
-
-    // The actual RPC.
-    Status status = stub_->SayHello(&context, request, &reply);
-
-    // Act upon its status.
-    if (status.ok()) {
-      return reply.message();
-    } else {
-      std::cout << status.error_code() << ": " << status.error_message()
-                << std::endl;
-      return "RPC failed";
-    }
-  }
-
- private:
-  std::unique_ptr<Greeter::Stub> stub_;
-};
 
 namespace ripple {
 
@@ -250,6 +199,13 @@ PeerImp::run()
             previousLedgerHash_ = *previous;
     }
 
+    std::cout << "before\n";
+    grpcOut = new GossipMessageClient(grpc::CreateChannel("localhost:50051",
+                          grpc::InsecureChannelCredentials()));
+
+    // JLOG(journal_.debug()) << " gRPC outbound channel open\n";
+    std::cout << "RYCB gRPC channel open\n";
+
     if (inbound_)
         doAccept();
     else
@@ -298,16 +254,6 @@ PeerImp::send(std::shared_ptr<Message> const& m)
     if (detaching_)
         return;
 
-    auto validator = m->getValidatorKey();
-    if (validator && !squelch_.expireSquelch(*validator))
-        return;
-
-    overlay_.reportTraffic(
-        safe_cast<TrafficCount::category>(m->getCategory()),
-        false,
-        static_cast<int>(m->getBuffer(compressionEnabled_).size()));
-
-
     //RYCB
     //Get the message type, if it is a validation (41),
     //Sends to the gRPC server to be sent using gossipsub
@@ -317,11 +263,14 @@ PeerImp::send(std::shared_ptr<Message> const& m)
     //Cant put the message on the queue when it is a validation
     //Otherwise it will be sent anyway
 
-    // auto messageType = m->getMessageType();
-    // if (messageType == 41)
-    // {
-    //     // std::cout << "RYCB message type: " << messageType <<"\n";
+    //Squelching does not apply to validations
 
+    auto messageType = m->getMessageType();
+    if (messageType == 41)
+    {
+    //     // std::cout << "RYCB message type: " << messageType <<"\n";
+        int _grpcOut = grpcOut->toLibP2P(m, compressionEnabled_);
+        JLOG(journal_.info()) << "gRPC message sent with status " << _grpcOut << "\n";
     //     //As for now, the server is not yet ready to hadle a real mesage (I think)
     //     //So we keep the hello world
     //     target_str = "localhost:50051";
@@ -329,9 +278,17 @@ PeerImp::send(std::shared_ptr<Message> const& m)
     //     std::string user("world");
     //     std::string reply = greeter.SayHello(user);
     //     std::cout << "Greeter received: " << reply << std::endl;
-    // }
-    // else
-    // {
+    }
+    else
+    {
+        auto validator = m->getValidatorKey();
+        if (validator && !squelch_.expireSquelch(*validator))
+            return;
+
+        overlay_.reportTraffic(
+            safe_cast<TrafficCount::category>(m->getCategory()),
+            false,
+            static_cast<int>(m->getBuffer(compressionEnabled_).size()));
         auto sendq_size = send_queue_.size();
 
         if (sendq_size < Tuning::targetSendQueue)
@@ -354,18 +311,21 @@ PeerImp::send(std::shared_ptr<Message> const& m)
         if (sendq_size != 0)
             return;
 
+
+    //void async_write(AsyncWriteStream & s, const ConstBufferSequence & buffers, WriteHandler handler);
+    //The handler to be called when the write operation completes. Copies will be made of the handler as required
         boost::asio::async_write(
-            stream_,
-            boost::asio::buffer(
+            stream_, //assync write stream
+            boost::asio::buffer(   //writing buffer
                 send_queue_.front()->getBuffer(compressionEnabled_)),
-            bind_executor(
+            bind_executor( //handler
                 strand_,
                 std::bind(
                     &PeerImp::onWriteMessage,
                     shared_from_this(),
                     std::placeholders::_1,
                     std::placeholders::_2)));
-    // }
+    }
 }
 
 void
@@ -898,6 +858,18 @@ PeerImp::domain() const
 void
 PeerImp::doProtocolStart()
 {
+    //RYCB
+    //Connect to the libp2p via gRPC
+    //Create inbound and outbound stubs
+
+    //Outbound behaves as a client 
+    // ChannelArguments args;
+    // // Set the default compression algorithm for the channel.
+    // args.SetCompressionAlgorithm(GRPC_COMPRESS_GZIP);
+    // GossipMessageClient grpcOut(grpc::CreateCustomChannel(
+    //       "localhost:50051", grpc::InsecureChannelCredentials(), args));
+
+
     onReadMessage(error_code(), 0);
 
     // Send all the validator lists that have been loaded
@@ -987,11 +959,11 @@ PeerImp::onReadMessage(error_code ec, std::size_t bytes_transferred)
 
     //RYCB
     //First tries to receive messages from the node.js gRPC server
-    target_str = "localhost:50051";
-    GreeterClient greeter(grpc::CreateChannel(target_str, grpc::InsecureChannelCredentials()));
-    std::string user("world");
-    std::string reply = greeter.SayHello(user);
-    std::cout << "Greeter received: " << reply << std::endl;
+    // target_str = "localhost:50051";
+    // GreeterClient greeter(grpc::CreateChannel(target_str, grpc::InsecureChannelCredentials()));
+    // std::string user("world");
+    // std::string reply = greeter.SayHello(user);
+    // std::cout << "Greeter received: " << reply << std::endl;
 
 
     // RYCB
