@@ -104,3 +104,11 @@ Builds/VisualStudio2015/*.sdf
 CMakeSettings.json
 compile_commands.json
 .clangd
+
+# RYCB My files
+grpc/node_modules/
+my_build/
+Builds/CMake/RippledCore.cmake
+grpc/package-lock.json
+grpc/package.json
+
