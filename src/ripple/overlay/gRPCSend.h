@@ -1,5 +1,5 @@
-#ifndef GOSSIP_MESSAGE_H
-#define GOSSIP_MESSAGE_H
+#ifndef GOSSIP_MESSAGE_SEND_H
+#define GOSSIP_MESSAGE_SEND_H
 
 
 #include <grpc/grpc.h>
@@ -9,6 +9,15 @@
 #include <grpcpp/security/credentials.h>
 
 #include <ripple/overlay/Message.h>
+
+#include <boost/archive/iterators/base64_from_binary.hpp>
+#include <boost/archive/iterators/binary_from_base64.hpp>
+#include <boost/archive/iterators/insert_linebreaks.hpp>
+#include <boost/archive/iterators/remove_whitespace.hpp>
+#include <boost/archive/iterators/transform_width.hpp>
+#include <boost/archive/iterators/ostream_iterator.hpp>
+#include <boost/algorithm/string.hpp>
+#include <bits/stl_algo.h>
 
 #include "org/xrpl/rpc/v1/gossip_message.grpc.pb.h"
 

@@ -16,7 +16,7 @@
  *
  */
 
-var PROTO_PATH = __dirname + '/helloworld.proto';
+var PROTO_PATH = __dirname + '/gossip_message.proto';
 
 var parseArgs = require('minimist');
 var grpc = require('@grpc/grpc-js');
@@ -29,9 +29,10 @@ var packageDefinition = protoLoader.loadSync(
      defaults: true,
      oneofs: true
     });
-var hello_proto = grpc.loadPackageDefinition(packageDefinition).helloworld;
+var gossip_proto = grpc.loadPackageDefinition(packageDefinition).gossipmessage;
 
 function main() {
+  console.log('enter main');
   var argv = parseArgs(process.argv.slice(2), {
     string: 'target'
   });
@@ -39,18 +40,20 @@ function main() {
   if (argv.target) {
     target = argv.target;
   } else {
-    target = 'localhost:50051';
+    target = 'localhost:20052';
   }
-  var client = new hello_proto.Greeter(target,
+  var client = new gossip_proto.GossipMessage(target,
                                        grpc.credentials.createInsecure());
-  var user;
+  console.log('Chanel created');
+  var mess;
   if (argv._.length > 0) {
-    user = argv._[0]; 
+    mess = argv._[0]; 
   } else {
-    user = 'world';
+    mess = 'test message';
   }
-  client.sayHello({name: user}, function(err, response) {
-    console.log('Greeting:', response.message);
+  console.log('message set');
+  client.toRippled({message: mess}, function(err, response) {
+    console.log('Message sent');
   });
 }
 

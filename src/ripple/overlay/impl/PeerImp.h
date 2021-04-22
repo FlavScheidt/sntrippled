@@ -36,6 +36,7 @@
 #include <ripple/resource/Fees.h>
 
 #include <ripple/overlay/gRPCSend.h>
+#include <ripple/overlay/gRPCReceive.h>
 
 #include <boost/circular_buffer.hpp>
 #include <boost/endian/conversion.hpp>
@@ -57,6 +58,7 @@ using grpc::Channel;
 // using grpc::ClientWriter;
 // using grpc::Status;
 using gossipClient::GossipMessageClient;
+using gossipServer::GossipMessageImpl;
 
 namespace ripple {
 
@@ -110,7 +112,6 @@ private:
     // args.SetCompressionAlgorithm(GRPC_COMPRESS_GZIP);
     gossipClient::GossipMessageClient *grpcOut;
 
-    // GossipMessageServer gRPCIn;
 
     // Updated at each stage of the connection process to reflect
     // the current conditions as closely as possible.

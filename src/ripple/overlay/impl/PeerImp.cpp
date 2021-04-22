@@ -152,6 +152,9 @@ stringIsUint256Sized(std::string const& pBuffStr)
 void
 PeerImp::run()
 {
+    pthread_t gRPCthread;
+    pthread_attr_t gRPCthreadAttr;
+    pthread_attr_init(&gRPCthreadAttr);
 
     if (!strand_.running_in_this_thread())
         return post(strand_, std::bind(&PeerImp::run, shared_from_this()));
@@ -199,12 +202,16 @@ PeerImp::run()
             previousLedgerHash_ = *previous;
     }
 
-    std::cout << "before\n";
-    grpcOut = new GossipMessageClient(grpc::CreateChannel("localhost:50051",
-                          grpc::InsecureChannelCredentials()));
+    // grpcOut = new GossipMessageClient(grpc::CreateChannel("localhost:50051",
+    //                       grpc::InsecureChannelCredentials()));
 
     // JLOG(journal_.debug()) << " gRPC outbound channel open\n";
-    std::cout << "RYCB gRPC channel open\n";
+    // std::cout << "RYCB gRPC channel open\n";
+
+    //Start gRPC Gossip sub server
+    
+ 
+    pthread_create(&gRPCthread,&gRPCthreadAttr,gossipServer::Run,NULL);
 
     if (inbound_)
         doAccept();
@@ -269,15 +276,8 @@ PeerImp::send(std::shared_ptr<Message> const& m)
     if (messageType == 41)
     {
     //     // std::cout << "RYCB message type: " << messageType <<"\n";
-        int _grpcOut = grpcOut->toLibP2P(m, compressionEnabled_);
-        JLOG(journal_.info()) << "gRPC message sent with status " << _grpcOut << "\n";
-    //     //As for now, the server is not yet ready to hadle a real mesage (I think)
-    //     //So we keep the hello world
-    //     target_str = "localhost:50051";
-    //     GreeterClient greeter(grpc::CreateChannel(target_str, grpc::InsecureChannelCredentials()));
-    //     std::string user("world");
-    //     std::string reply = greeter.SayHello(user);
-    //     std::cout << "Greeter received: " << reply << std::endl;
+        // int _grpcOut = grpcOut->toLibP2P(m, compressionEnabled_);
+        // JLOG(journal_.info()) << "gRPC message sent with status " << _grpcOut << "\n";
     }
     else
     {
@@ -869,7 +869,6 @@ PeerImp::doProtocolStart()
     // GossipMessageClient grpcOut(grpc::CreateCustomChannel(
     //       "localhost:50051", grpc::InsecureChannelCredentials(), args));
 
-
     onReadMessage(error_code(), 0);
 
     // Send all the validator lists that have been loaded
@@ -914,6 +913,9 @@ void
 PeerImp::onReadMessage(error_code ec, std::size_t bytes_transferred)
 {
     // std::string target_str;
+        //Start gRPC Gossip sub server
+    // grpcIn = new GossipMessageImpl();
+    // grpcIn->Run();
 
     if (!socket_.is_open())
         return;
