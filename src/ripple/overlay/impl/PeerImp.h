@@ -184,6 +184,7 @@ private:
     Resource::Charge fee_;
     std::shared_ptr<PeerFinder::Slot> const slot_;
     boost::beast::multi_buffer read_buffer_;
+    // boost::beast::multi_buffer read_buffer_grpc;
     http_request_type request_;
     http_response_type response_;
     boost::beast::http::fields const& headers_;

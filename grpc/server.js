@@ -112,7 +112,7 @@ function toLibP2P(call, callback) {
     let base64data = buff.toString('base64');
     console.log("___________________________________________")
     console.log(call.request.message)
-    // console.log(base64data)
+//    console.log(base64data)
     console.log("___________________________________________")
     callback(null, {
         message: 'True'

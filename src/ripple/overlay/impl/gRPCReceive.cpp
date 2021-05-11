@@ -1,18 +1,50 @@
 #include <ripple/overlay/gRPCReceive.h>
 
+#include <boost/algorithm/clamp.hpp>
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/predicate.hpp>
+#include <boost/beast/core/ostream.hpp>
+
 //In this case, the rippled acts as the server, receiving the validation and responding with the status
+int gRPCportNum = 2;
 
 namespace gossipServer
 {
     //Does not belong to the object, so we are able to create the pthread
+    //Need to pass a pointer to the peerimp object to be able to handle the messages
     void * 
-    Run(void * ret)
+    Run(void * upperObject)
     {
-        std::cout << "THREAD NUMBER " << gettid() << std::endl;
-        gossipServer::GossipMessageImpl *grpcIn;
-        grpcIn = new GossipMessageImpl();
 
-        grpcIn->ConnectAndRun();
+        if (gRPCportNum == 2)
+        {
+            gossipServer::GossipMessageImpl *grpcIn;
+            grpcIn = new GossipMessageImpl();
+
+            grpcIn->ConnectAndRun(upperObject);
+        }
+
+    }
+
+
+    void dump_buffer(std::ostream& os, multi_buffer const& mb) 
+    {
+        os << mb.size() << " (" << mb.capacity() << ") "
+           << "'" << boost::beast::buffers(mb.data()) << "'\n";
+    }
+
+    GossipMessageImpl::GossipMessageImpl()
+    {
+        //RYCB ugly logics for the port number
+        //Cause there are threads here and they made my day harder
+        std::string portNumber;
+        int gRPCportNumAux = gRPCportNum;
+
+        portNumber = boost::lexical_cast<std::string>(gRPCportNumAux);
+
+        gRPCport = "0.0.0.0:2005" + portNumber;
+
+        gRPCportNum++;
     }
 
     GossipMessageImpl::~GossipMessageImpl() 
@@ -27,22 +59,18 @@ namespace gossipServer
 
     // There is no shutdown handling in this code.
 
-    Status 
-    GossipMessageImpl::toRippled(ServerContext* context, const Gossip* gossip, Control* control) 
-    {
-        std::cout << "Message received:" << std::endl;
-        std::cout << gossip->message() << std::endl;
+    // Status 
+    // GossipMessageImpl::toRippled(ServerContext* context, const Gossip* gossip, Control* control) 
+    // {
 
-        control->set_stream(1);
 
-        return Status::OK;
-    }
+    // }
 
 
     void
-    GossipMessageImpl::ConnectAndRun()
+    GossipMessageImpl::ConnectAndRun(void * upperObject)
     {
-        std::string server_address("0.0.0.0:20052");
+        std::string server_address(gRPCport);
         ServerBuilder builder;
         // Listen on the given address without any authentication mechanism.
         builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
@@ -54,11 +82,9 @@ namespace gossipServer
         cq_ = builder.AddCompletionQueue();
         // Finally assemble the server.
         server_ = builder.BuildAndStart();
-        std::cout << "gRPC Server listening on " << server_address << std::endl;
+        // std::cout << "gRPC Server listening on " << server_address << std::endl;
         // Proceed to the server's main loop.
-        HandleRpcs();
-
-        std::cout << "bye" << std::endl;
+        HandleRpcs(upperObject);
 
         pthread_exit(0);
     }
@@ -66,20 +92,23 @@ namespace gossipServer
     // Take in the "service" instance (in this case representing an asynchronous
     // server) and the completion queue "cq" used for asynchronous communication
     // with the gRPC runtime.
-    GossipMessageImpl::CallData::CallData(GossipMessage::AsyncService* service, ServerCompletionQueue* cq)
+    GossipMessageImpl::CallData::CallData(GossipMessage::AsyncService* service, ServerCompletionQueue* cq, void * upperObject)
         : service_(service), cq_(cq), responder_(&ctx_), status_(CREATE) 
     {
         // Invoke the serving logic right away.
-        GossipMessageImpl::CallData::Proceed();
+        GossipMessageImpl::CallData::Proceed(upperObject);
     }
 
+
     void 
-    GossipMessageImpl::CallData::Proceed() 
+    GossipMessageImpl::CallData::Proceed(void * upperObject) 
     {
-        std::cout << "enter proceed" << std::endl;
+        std::size_t bytes_transferred;
+        std::error_code ec;
+        std::size_t bytes_consumed;
+
         if (status_ == CREATE) 
         {
-            std::cout << "create" << std::endl;
             // Make this instance progress to the PROCESS state.
             status_ = PROCESS;
             // As part of the initial CREATE state, we *request* that the system
@@ -92,15 +121,65 @@ namespace gossipServer
         } 
         else if (status_ == PROCESS) 
         {
-            std::cout << "process" << std::endl;
             // Spawn a new CallData instance to serve new clients while we process
             // the one for this CallData. The instance will deallocate itself as
             // part of its FINISH state.
-            // new CallData(service_, cq_);
+            new CallData(service_, cq_, upperObject);
             // // The actual processing.
-            std::string prefix("Hello ");
             std::cout << "gRPC message received\n"; //the message processing goes here
-            control.set_stream(true);
+            std::cout << gossip.message() << std::endl;
+
+            //RYCB
+            //Invocking the protocol to treat the message
+            // Since we are not usting beast to receive the message, we don't nedd
+            // to call read_some. So I will just copy what's on gossip.message()
+            // inside the buffer, make the same treatment we have on onReadMessage
+            // and invoke invokeProtocolMessage(). Then I just need to pray.
+
+            //Here is the copy
+
+            bytes_transferred = boost::asio::buffer_copy(read_buffer_grpc.prepare(gossip.message().size()), boost::asio::buffer(gossip.message()));
+            read_buffer_grpc.commit(bytes_transferred);
+
+            //Print on the standard output
+            dump_buffer(std::cout << "after: ", read_buffer_grpc);
+            
+            // //Print on the log
+            // if (auto stream = journal_.trace())
+            // {   
+            //     if (sizeBuffergRPC > 0)
+            //         stream << "onReadGRPCMessage: " << sizeBuffergRPC << " bytes";
+            //     else
+            //         stream << "onReadGRPCMessage";
+            // }
+
+            //Prepare the buffer to be read
+            read_buffer_grpc.commit(bytes_transferred);
+
+            //Hin is zero just because today is tuesday
+            //peerObject is the handler
+            std::size_t  hint = 0;
+            ripple::PeerImp *peerObject = static_cast<ripple::PeerImp *>(upperObject);
+
+            //Read and process buffer, unless there is an error on invokeProtoclMessage
+            while (read_buffer_grpc.size() > 0)
+            {
+                std::tie(bytes_consumed, ec) =
+                    ripple::invokeProtocolMessage(read_buffer_grpc.data(), *peerObject, hint);
+                if (bytes_consumed == 0)
+                    break;
+                read_buffer_grpc.consume(bytes_consumed);
+            }
+
+            //On the original function, tries to read from the socket
+            //However, we are merely emulating this behavior, when in 
+            // fact we receive the message via gRPC and not HTTP
+            // which means that we already have a loop occuring
+            // and we don't need to trigger onReadMessage using
+            // bind() to call the funtion recursivelly as a handler
+
+            control.set_stream(true); //set the response
+
             // And we are done! Let the gRPC runtime know we've finished, using the
             // memory address of this instance as the uniquely identifying tag for
             // the event.
@@ -109,27 +188,23 @@ namespace gossipServer
         } 
         else 
         {
-            std::cout << "assert" << std::endl;
             GPR_ASSERT(status_ == FINISH);
             // Once in the FINISH state, deallocate ourselves (CallData).
             delete this;
         }
-        std::cout << "leaving" << std::endl;
     }
 
 
     // This can be run in multiple threads if needed.
     void 
-    GossipMessageImpl::HandleRpcs() 
+    GossipMessageImpl::HandleRpcs(void * upperObject) 
     {
-        std::cout << "enter handle" << std::endl;
         // Spawn a new CallData instance to serve new clients.
-        new GossipMessageImpl::CallData(&service_, cq_.get());
+        new GossipMessageImpl::CallData(&service_, cq_.get(), upperObject);
         void* tag;  // uniquely identifies a request.
         bool ok;
         while (true) 
         {
-            std::cout << "true" << std::endl;
             // Block waiting to read the next event from the completion queue. The
             // event is uniquely identified by its tag, which in this case is the
             // memory address of a CallData instance.
@@ -137,9 +212,8 @@ namespace gossipServer
             // tells us whether there is any kind of event or cq_ is shutting down.
             GPR_ASSERT(cq_->Next(&tag, &ok));
             GPR_ASSERT(ok);
-            static_cast<GossipMessageImpl::CallData*>(tag)->GossipMessageImpl::CallData::Proceed();
+            static_cast<GossipMessageImpl::CallData*>(tag)->GossipMessageImpl::CallData::Proceed(upperObject);
         }
-        std::cout << "leave handle" << std::endl;
     }
 
 };

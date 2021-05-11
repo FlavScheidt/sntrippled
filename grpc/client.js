@@ -49,7 +49,7 @@ function main() {
   if (argv._.length > 0) {
     mess = argv._[0]; 
   } else {
-    mess = 'test message';
+    mess = 'AAAA6wApCugBIoAAAAEmAAqu4CkoFJRnOhhzMPeiQk/QUdpy95wgfe72yP3/k/JZ18XqhmOLa7QJ7+YULlNwNCVqUBcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFAZL8sR3hL5qqcpwMNbqkiUGkM+vRjkojtbP7SgiBvxt5xzIQK7divurbJKMYI6AGpyGnZKSt+ty3Pv+TIzb2Bai/OEeHZGMEQCIAw2dE1DjbWleyeJQ0DlhygRLgBehhhcRe75B3yGJADsAiBoH1TZ19hMEfBXwTR6DQkVvjx2vt/6i18IotHum8RSTQ==';
   }
   console.log('message set');
   client.toRippled({message: mess}, function(err, response) {

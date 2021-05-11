@@ -202,16 +202,17 @@ PeerImp::run()
             previousLedgerHash_ = *previous;
     }
 
-    // grpcOut = new GossipMessageClient(grpc::CreateChannel("localhost:50051",
-    //                       grpc::InsecureChannelCredentials()));
+    //RYCB
+    //Start the gRPC client
+    grpcOut = new GossipMessageClient(grpc::CreateChannel("localhost:50051",
+                          grpc::InsecureChannelCredentials()));
 
-    // JLOG(journal_.debug()) << " gRPC outbound channel open\n";
-    // std::cout << "RYCB gRPC channel open\n";
+    JLOG(journal_.debug()) << " gRPC outbound channel open\n";
 
     //Start gRPC Gossip sub server
-    
- 
-    pthread_create(&gRPCthread,&gRPCthreadAttr,gossipServer::Run,NULL);
+    void * thisObject = this;
+    pthread_create(&gRPCthread,&gRPCthreadAttr,gossipServer::Run,thisObject);
+    JLOG(journal_.debug()) << " gRPC inbound channel open\n";
 
     if (inbound_)
         doAccept();
@@ -275,9 +276,9 @@ PeerImp::send(std::shared_ptr<Message> const& m)
     auto messageType = m->getMessageType();
     if (messageType == 41)
     {
-    //     // std::cout << "RYCB message type: " << messageType <<"\n";
-        // int _grpcOut = grpcOut->toLibP2P(m, compressionEnabled_);
-        // JLOG(journal_.info()) << "gRPC message sent with status " << _grpcOut << "\n";
+        // std::cout << "RYCB message type: " << messageType <<"\n";
+        int _grpcOut = grpcOut->toLibP2P(m, compressionEnabled_);
+        JLOG(journal_.info()) << "gRPC message sent with status " << _grpcOut << "\n";
     }
     else
     {
@@ -912,10 +913,6 @@ PeerImp::doProtocolStart()
 void
 PeerImp::onReadMessage(error_code ec, std::size_t bytes_transferred)
 {
-    // std::string target_str;
-        //Start gRPC Gossip sub server
-    // grpcIn = new GossipMessageImpl();
-    // grpcIn->Run();
 
     if (!socket_.is_open())
         return;
@@ -957,20 +954,6 @@ PeerImp::onReadMessage(error_code ec, std::size_t bytes_transferred)
             break;
         read_buffer_.consume(bytes_consumed);
     }
-
-
-    //RYCB
-    //First tries to receive messages from the node.js gRPC server
-    // target_str = "localhost:50051";
-    // GreeterClient greeter(grpc::CreateChannel(target_str, grpc::InsecureChannelCredentials()));
-    // std::string user("world");
-    // std::string reply = greeter.SayHello(user);
-    // std::cout << "Greeter received: " << reply << std::endl;
-
-
-    // RYCB
-    //The sending seems to be happening here
-    //But this function actually calls a ssl socket and not asio (?)
 
     // Timeout on writes only
     stream_.async_read_some(
