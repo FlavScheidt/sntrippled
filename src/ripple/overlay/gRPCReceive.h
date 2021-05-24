@@ -11,6 +11,8 @@
 #include <boost/lexical_cast.hpp>  
 
 #include <ripple/overlay/Compression.h>
+#include <ripple/basics/Log.h>
+#include <ripple/beast/utility/Journal.h>
 
 #include <boost/circular_buffer.hpp>
 #include <boost/endian/conversion.hpp>
@@ -44,8 +46,15 @@ using grpc::Status;
 
 using boost::lexical_cast;
 
+
 namespace gossipServer
 {
+
+    typedef struct runArguments
+    {
+        void * upperObject;
+        beast::Journal journal;
+    } runArguments;
 
     void * Run(void * ret);
 
@@ -53,24 +62,34 @@ namespace gossipServer
     {
         public:
         ~GossipMessageImpl();
-        GossipMessageImpl();
-
+        explicit GossipMessageImpl(beast::Journal journal);
         // void Run();
 
         void  ConnectAndRun(void * upperObject);
 
         // Status toRippled(ServerContext* context, const Gossip* gossip, Control* control);
 
-        private:
+
+        //For the log
+        beast::Journal const journal_; 
+
+        // Application& app_;
+        // id_t const id_;
+        // beast::WrappedSink sink_;
+        // beast::WrappedSink p_sink_;
+        // beast::Journal const journal_;
+        // beast::Journal const p_journal_;   
+
         class CallData 
         {
             public:
-            CallData(GossipMessage::AsyncService* service, ServerCompletionQueue* cq, void * upperObject);
+            CallData(GossipMessage::AsyncService* service, ServerCompletionQueue* cq, void * upperObject, beast::Journal journal);
             void Proceed(void * upperObject);
 
             boost::beast::multi_buffer read_buffer_grpc;
 
             private:
+            beast::Journal const journal_; 
             // The means of communication with the gRPC runtime for an asynchronous
             // server.
             GossipMessage::AsyncService* service_;

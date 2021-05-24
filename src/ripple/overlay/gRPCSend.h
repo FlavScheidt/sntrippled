@@ -9,6 +9,7 @@
 #include <grpcpp/security/credentials.h>
 
 #include <ripple/overlay/Message.h>
+#include <ripple/basics/Log.h>
 
 #include <boost/archive/iterators/base64_from_binary.hpp>
 #include <boost/archive/iterators/binary_from_base64.hpp>
@@ -38,7 +39,7 @@ namespace gossipClient
 	{
 
 	    public:
-	    GossipMessageClient(std::shared_ptr<Channel> channel);
+	    GossipMessageClient(std::shared_ptr<Channel> channel, beast::Journal journal);
 
 	    int toLibP2P(std::shared_ptr<ripple::Message> const& m, ripple::compression::Compressed compressionEnabled_);
 
@@ -46,6 +47,7 @@ namespace gossipClient
 
 	    private:
 	    std::unique_ptr<GossipMessage::Stub> stub_;
+	    beast::Journal const journal_; 
 	};
 }
 

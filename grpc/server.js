@@ -112,7 +112,10 @@ function toLibP2P(call, callback) {
     let base64data = buff.toString('base64');
     console.log("___________________________________________")
     console.log(call.request.message)
-//    console.log(base64data)
+
+    // Wazen: gossibsub publish
+    my_node.pubsub.publish(topic, call.request.message)
+
     console.log("___________________________________________")
     callback(null, {
         message: 'True'

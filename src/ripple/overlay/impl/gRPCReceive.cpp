@@ -12,16 +12,22 @@ namespace gossipServer
 {
     //Does not belong to the object, so we are able to create the pthread
     //Need to pass a pointer to the peerimp object to be able to handle the messages
+
+    //Alter here to freceive the log app_.journal(gRPCServer)
     void * 
-    Run(void * upperObject)
+    Run(void * tArguments)
     {
+        gossipServer::runArguments *args = static_cast<gossipServer::runArguments *>(tArguments);
+        
+        beast::Journal journal = static_cast<beast::Journal>(args->journal);
+        // ripple::PeerImp *peerObject = static_cast<ripple::PeerImp *>(upperObject);
 
         if (gRPCportNum == 2)
         {
             gossipServer::GossipMessageImpl *grpcIn;
-            grpcIn = new GossipMessageImpl();
+            grpcIn = new GossipMessageImpl(journal);
 
-            grpcIn->ConnectAndRun(upperObject);
+            grpcIn->ConnectAndRun(args->upperObject);
         }
 
     }
@@ -33,10 +39,11 @@ namespace gossipServer
            << "'" << boost::beast::buffers(mb.data()) << "'\n";
     }
 
-    GossipMessageImpl::GossipMessageImpl()
+    GossipMessageImpl::GossipMessageImpl(beast::Journal journal) : journal_(journal)
     {
         //RYCB ugly logics for the port number
         //Cause there are threads here and they made my day harder
+        // journal_ = journal;
         std::string portNumber;
         int gRPCportNumAux = gRPCportNum;
 
@@ -45,6 +52,8 @@ namespace gossipServer
         gRPCport = "0.0.0.0:2005" + portNumber;
 
         gRPCportNum++;
+        JLOG(journal_.debug()) << "gRPC server object created succesfully";
+
     }
 
     GossipMessageImpl::~GossipMessageImpl() 
@@ -82,7 +91,8 @@ namespace gossipServer
         cq_ = builder.AddCompletionQueue();
         // Finally assemble the server.
         server_ = builder.BuildAndStart();
-        // std::cout << "gRPC Server listening on " << server_address << std::endl;
+        // std::cout << "gRPC Server listening on " << server_a
+        JLOG(journal_.debug()) << "gRPC server listening on port " << gRPCport;
         // Proceed to the server's main loop.
         HandleRpcs(upperObject);
 
@@ -92,8 +102,8 @@ namespace gossipServer
     // Take in the "service" instance (in this case representing an asynchronous
     // server) and the completion queue "cq" used for asynchronous communication
     // with the gRPC runtime.
-    GossipMessageImpl::CallData::CallData(GossipMessage::AsyncService* service, ServerCompletionQueue* cq, void * upperObject)
-        : service_(service), cq_(cq), responder_(&ctx_), status_(CREATE) 
+    GossipMessageImpl::CallData::CallData(GossipMessage::AsyncService* service, ServerCompletionQueue* cq, void * upperObject, beast::Journal journal)
+        : service_(service), cq_(cq), responder_(&ctx_), status_(CREATE), journal_(journal)
     {
         // Invoke the serving logic right away.
         GossipMessageImpl::CallData::Proceed(upperObject);
@@ -124,10 +134,10 @@ namespace gossipServer
             // Spawn a new CallData instance to serve new clients while we process
             // the one for this CallData. The instance will deallocate itself as
             // part of its FINISH state.
-            new CallData(service_, cq_, upperObject);
+            new CallData(service_, cq_, upperObject, journal_);
             // // The actual processing.
-            std::cout << "gRPC message received\n"; //the message processing goes here
-            std::cout << gossip.message() << std::endl;
+            JLOG(journal_.debug()) << "gRPC message received"; //the message processing goes here
+            // std::cout << gossip.message() << std::endl;
 
             //RYCB
             //Invocking the protocol to treat the message
@@ -142,16 +152,17 @@ namespace gossipServer
             read_buffer_grpc.commit(bytes_transferred);
 
             //Print on the standard output
-            dump_buffer(std::cout << "after: ", read_buffer_grpc);
+            // dump_buffer(std::cout << "after: ", read_buffer_grpc);
             
-            // //Print on the log
-            // if (auto stream = journal_.trace())
-            // {   
-            //     if (sizeBuffergRPC > 0)
-            //         stream << "onReadGRPCMessage: " << sizeBuffergRPC << " bytes";
-            //     else
-            //         stream << "onReadGRPCMessage";
-            // }
+            //Print on the log
+            if (auto stream = journal_.trace())
+            {   
+                if (bytes_transferred > 0)
+                    stream << "onReadGRPCMessage: " << bytes_transferred << " bytes";
+            // JLOG(journal_.debug()) << "onReadGRPCMessage: " << bytes_transferred << " bytes";
+                else
+                    stream << "onReadGRPCMessage";
+            }
 
             //Prepare the buffer to be read
             read_buffer_grpc.commit(bytes_transferred);
@@ -200,7 +211,7 @@ namespace gossipServer
     GossipMessageImpl::HandleRpcs(void * upperObject) 
     {
         // Spawn a new CallData instance to serve new clients.
-        new GossipMessageImpl::CallData(&service_, cq_.get(), upperObject);
+        new GossipMessageImpl::CallData(&service_, cq_.get(), upperObject, journal_);
         void* tag;  // uniquely identifies a request.
         bool ok;
         while (true) 

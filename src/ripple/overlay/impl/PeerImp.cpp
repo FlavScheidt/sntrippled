@@ -205,14 +205,16 @@ PeerImp::run()
     //RYCB
     //Start the gRPC client
     grpcOut = new GossipMessageClient(grpc::CreateChannel("localhost:50051",
-                          grpc::InsecureChannelCredentials()));
+                          grpc::InsecureChannelCredentials()), journal_);
 
-    JLOG(journal_.debug()) << " gRPC outbound channel open\n";
+    JLOG(journal_.debug()) << "gRPC outbound channel open\n";
 
     //Start gRPC Gossip sub server
     void * thisObject = this;
-    pthread_create(&gRPCthread,&gRPCthreadAttr,gossipServer::Run,thisObject);
-    JLOG(journal_.debug()) << " gRPC inbound channel open\n";
+    gossipServer::runArguments tArgs = {thisObject, journal_};
+
+    pthread_create(&gRPCthread,&gRPCthreadAttr,gossipServer::Run,&tArgs);
+    JLOG(journal_.debug()) << "gRPC inbound channel open\n";
 
     if (inbound_)
         doAccept();
@@ -859,16 +861,6 @@ PeerImp::domain() const
 void
 PeerImp::doProtocolStart()
 {
-    //RYCB
-    //Connect to the libp2p via gRPC
-    //Create inbound and outbound stubs
-
-    //Outbound behaves as a client 
-    // ChannelArguments args;
-    // // Set the default compression algorithm for the channel.
-    // args.SetCompressionAlgorithm(GRPC_COMPRESS_GZIP);
-    // GossipMessageClient grpcOut(grpc::CreateCustomChannel(
-    //       "localhost:50051", grpc::InsecureChannelCredentials(), args));
 
     onReadMessage(error_code(), 0);
 
@@ -909,6 +901,13 @@ PeerImp::doProtocolStart()
     setTimer();
 }
 
+    // void dump_buffer(std::ostream& os, multi_buffer const& mb) 
+    // {
+    //     os << mb.size() << " (" << mb.capacity() << ") "
+    //        << "'" << boost::beast::buffers(mb.data()) << "'\n";
+    // }
+
+
 // Called repeatedly with protocol message data
 void
 PeerImp::onReadMessage(error_code ec, std::size_t bytes_transferred)
@@ -936,9 +935,9 @@ PeerImp::onReadMessage(error_code ec, std::size_t bytes_transferred)
     metrics_.recv.add_message(bytes_transferred);
 
     read_buffer_.commit(bytes_transferred);
+    // dump_buffer(std::cout << "after: ", read_buffer_);
 
     auto hint = Tuning::readBufferBytes;
-
     while (read_buffer_.size() > 0)
     {
         std::size_t bytes_consumed;
@@ -984,14 +983,14 @@ PeerImp::onWriteMessage(error_code ec, std::size_t bytes_transferred)
             stream << "onWriteMessage";
     }
 
-    metrics_.sent.add_message(bytes_transferred); //add to where? not send_queue, for sure
+    metrics_.sent.add_message(bytes_transferred); 
 
     //RYCB
     //what is the protocol sending here?
     //as it seems it just sends the queue
     //but dont add anything to the queue
     assert(!send_queue_.empty());
-    send_queue_.pop(); //taking what of the queue?
+    send_queue_.pop(); 
     if (!send_queue_.empty())
     {
         // Timeout on writes only
