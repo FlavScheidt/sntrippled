@@ -77,15 +77,15 @@ async function main() {
  // Gossip section 
  const topic = 'validations'
  const [node1] = await Promise.all([ createNode()  ])
-// console.log("------------------------------------------------------------------")
-// console.log("Peer Info: Gossib function")
-// console.log("ID:", node1.peerId._idB58String)
-// console.log("------------------------------------------------------------------")
+console.log("------------------------------------------------------------------")
+console.log("Peer Info: Gossib function")
+console.log("ID:", node1.peerId._idB58String)
+console.log("------------------------------------------------------------------")
 
   await node1.pubsub.subscribe(topic)
  
   /////////////////////////////////////////////////////
-  console.log('enter main');
+  // console.log('enter main');
   var argv = parseArgs(process.argv.slice(2), {
     string: 'target'
   });
@@ -97,7 +97,7 @@ async function main() {
   }
   var client = new gossip_proto.GossipMessage(target,
                                        grpc.credentials.createInsecure());
-  console.log('Chanel created');
+  console.log(Date.now(), ' | gRPC | Chanel created');
   //var mess;
   //if (argv._.length > 0) {
   //  mess = argv._[0]; 
@@ -108,7 +108,7 @@ async function main() {
   node1.pubsub.on(topic, (msg) => {
    //console.log(`I received: ${uint8ArrayToString(msg.data)}`)
    client.toRippled({message: msg.data}, function(err, response) {
-    	console.log('Message sent to rippled server');
+    	console.log(Date.now(), ' | gRPC | Message sent to rippled server');
     });
   })
   

@@ -64,15 +64,15 @@ const gosssib = async() => {
         createNode()
     ])
     my_node = node1
-    // console.log("------------------------------------------------------------------")
-    // console.log("Peer Info: Gossib + toLibP2P gRPC function")
-    // console.log("ID:", node1.peerId._idB58String)
-    // console.log("------------------------------------------------------------------")
-    node1.on('peer:discovery', (peer) => console.log('Discovered:', peer.id.toB58String()))
+    console.log("------------------------------------------------------------------")
+    console.log("Peer Info: Gossib + toLibP2P gRPC function")
+    console.log("ID:", node1.peerId._idB58String)
+    console.log("------------------------------------------------------------------")
+    node1.on('peer:discovery', (peer) => console.log(Date.now(), " | Discovered:", peer.id.toB58String()))
 
     node1.pubsub.on(topic, (msg) => {
-        console.log(`${uint8ArrayToString(msg.data)}`)
-        // console.log(`I received: ${uint8ArrayToString(msg.data)}`)
+        // console.log(`${uint8ArrayToString(msg.data)}`)
+        console.log(Date.now(), " | GossipSub | I received: ", msg.data)
     })
 
     await node1.pubsub.subscribe(topic)
@@ -111,7 +111,7 @@ function toLibP2P(call, callback) {
     let buff = new Buffer(call.request.message);
     let base64data = buff.toString('base64');
     console.log("___________________________________________")
-    console.log(call.request.message)
+    console.log(Date.now(), " | gRPC | I received: ",call.request.message)
 
     // Wazen: gossibsub publish
     my_node.pubsub.publish(topic, call.request.message)
