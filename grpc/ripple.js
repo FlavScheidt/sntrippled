@@ -10,6 +10,20 @@ const uint8ArrayFromString = require('uint8arrays/from-string')
 const uint8ArrayToString = require('uint8arrays/to-string')
 const MulticastDNS = require('libp2p-mdns')
 
+var PROTO_PATH = __dirname + '/gossip_message.proto';
+var grpc = require('@grpc/grpc-js');
+var protoLoader = require('@grpc/proto-loader');
+var packageDefinition = protoLoader.loadSync(
+    PROTO_PATH, {
+        keepCase: true,
+        longs: String,
+        enums: String,
+        defaults: true,
+        oneofs: true
+    });
+
+
+
 const createNode = async () => {
   const node = await Libp2p.create({
     addresses: {
