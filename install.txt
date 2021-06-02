@@ -96,7 +96,7 @@ START
 
 $ cd /opt/local/bin/
 
-$ sudo ./rippled –conf /opt/ripple/etc/rippled.cfg –quorum 2
+$ sudo ./rippled –-conf /opt/ripple/etc/rippled.cfg –-quorum 2
 
  
 
