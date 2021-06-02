@@ -42,10 +42,11 @@ $ git checkout release (or master or develop)
 
 CONFIGURE BOOST PATH
 
-$ export BOOST_ROOT=~/boost_1_76_0
+$ export BOOST_ROOT=/root/boost_1_76_0
 
-Alternatively, you can add DBOOST_ROOT=~/boost_1_76_0 to the command line when invoking cmake below
+Alternatively, you can add DBOOST_ROOT=/root/boost_1_76_0 to the command line when invoking cmake below
 
+export PATH=$PATH:/opt/local
  
 
 GENERATE CONFIG, COMPILE, INSTALL
@@ -54,7 +55,7 @@ mkdir my_build
 
 cd my_build
 
-cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=/opt/local ..
+cmake -DCMAKE_BUILD_TYPE=Debug -DBOOST_ROOT=/root/boost_1_76_0 -DCMAKE_INSTALL_PREFIX=/opt/local ..
 
 cmake --build . --target install -- -j <parallel jobs>
 
