@@ -14,9 +14,9 @@ BUILD BOOST
 
 $ wget https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0_rc2.tar.gz
 
-$ tar -xzf boost_1_70_0.tar.gz
+$ tar -xzf boost_1_76_0_rc2.tar.gz
 
-$ cd boost_1_70_0
+$ cd boost_1_76_0
 
 $ ./bootstrap.sh
 
@@ -42,9 +42,9 @@ $ git checkout release (or master or develop)
 
 CONFIGURE BOOST PATH
 
-$ export BOOST_ROOT=~/boost_1_70_0
+$ export BOOST_ROOT=~/boost_1_76_0
 
-Alternatively, you can add DBOOST_ROOT=~/boost_1_70_0 to the command line when invoking cmake below
+Alternatively, you can add DBOOST_ROOT=~/boost_1_76_0 to the command line when invoking cmake below
 
  
 
