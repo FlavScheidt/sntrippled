@@ -12,17 +12,12 @@ $ apt-get install -y gcc g++ wget git cmake pkg-config protobuf-compiler libprot
 
 BUILD BOOST
 
-$ wget https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0_rc2.tar.gz
-
-$ tar -xzf boost_1_76_0_rc2.tar.gz
-
-$ cd boost_1_76_0
-
-$ ./bootstrap.sh
-
-$ ./b2 headers
-
-$ ./b2 -j <Num Parallel>
+$ wget https://boostorg.jfrog.io/artifactory/main/release/1.70.0/source/boost_1_70_0.tar.gz
+tar -xzf boost_1_70_0.tar.gz
+cd boost_1_70_0
+./bootstrap.sh
+./b2 headers
+./b2 -j <Num Parallel>
 
  
 
@@ -42,9 +37,9 @@ $ git checkout release (or master or develop)
 
 CONFIGURE BOOST PATH
 
-$ export BOOST_ROOT=/root/boost_1_76_0
+$ export BOOST_ROOT=/root/boost_1_70_0
 
-Alternatively, you can add DBOOST_ROOT=/root/boost_1_76_0 to the command line when invoking cmake below
+Alternatively, you can add DBOOST_ROOT=/root/boost_1_70_0 to the command line when invoking cmake below
 
 export PATH=$PATH:/opt/local
  
@@ -52,11 +47,8 @@ export PATH=$PATH:/opt/local
 GENERATE CONFIG, COMPILE, INSTALL
 
 mkdir my_build
-
 cd my_build
-
-cmake -DCMAKE_BUILD_TYPE=Debug -DBOOST_ROOT=/root/boost_1_76_0 -DCMAKE_INSTALL_PREFIX=/opt/local ..
-
+cmake -DCMAKE_BUILD_TYPE=Debug -DBOOST_ROOT=/root/boost_1_70_0 -DCMAKE_INSTALL_PREFIX=/opt/local ..
 cmake --build . --target install -- -j <parallel jobs>
 
  
