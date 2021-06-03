@@ -204,17 +204,17 @@ PeerImp::run()
 
     //RYCB
     //Start the gRPC client
-    // grpcOut = new GossipMessageClient(grpc::CreateChannel("localhost:50051",
-    //                       grpc::InsecureChannelCredentials()), journal_);
+    grpcOut = new GossipMessageClient(grpc::CreateChannel("localhost:50051",
+                          grpc::InsecureChannelCredentials()), journal_);
 
-    // JLOG(journal_.debug()) << "gRPC outbound channel open\n";
+    JLOG(journal_.debug()) << "gRPC outbound channel open\n";
 
-    // //Start gRPC Gossip sub server
-    // void * thisObject = this;
-    // gossipServer::runArguments tArgs = {thisObject, journal_};
+    //Start gRPC Gossip sub server
+    void * thisObject = this;
+    gossipServer::runArguments tArgs = {thisObject, journal_};
 
-    // pthread_create(&gRPCthread,&gRPCthreadAttr,gossipServer::Run,&tArgs);
-    // JLOG(journal_.debug()) << "gRPC inbound channel open\n";
+    pthread_create(&gRPCthread,&gRPCthreadAttr,gossipServer::Run,&tArgs);
+    JLOG(journal_.debug()) << "gRPC inbound channel open\n";
 
     if (inbound_)
         doAccept();
@@ -275,13 +275,13 @@ PeerImp::send(std::shared_ptr<Message> const& m)
 
     //Squelching does not apply to validations
 
-    // auto messageType = m->getMessageType();
-    // if (messageType == 41)
-    // {
-    //     // std::cout << "RYCB message type: " << messageType <<"\n";
-    //     int _grpcOut = grpcOut->toLibP2P(m, compressionEnabled_);
-    //     JLOG(journal_.info()) << "gRPC message sent with status " << _grpcOut << "\n";
-    // }
+    auto messageType = m->getMessageType();
+    if (messageType == 41)
+    {
+        std::cout << "RYCB message type: " << messageType <<"\n";
+        int _grpcOut = grpcOut->toLibP2P(m, compressionEnabled_);
+        JLOG(journal_.info()) << "gRPC message sent with status " << _grpcOut << "\n";
+    }
     // else
     // {
         auto validator = m->getValidatorKey();
