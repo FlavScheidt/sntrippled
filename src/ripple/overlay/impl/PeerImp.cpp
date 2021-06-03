@@ -204,17 +204,17 @@ PeerImp::run()
 
     //RYCB
     //Start the gRPC client
-    grpcOut = new GossipMessageClient(grpc::CreateChannel("localhost:50051",
-                          grpc::InsecureChannelCredentials()), journal_);
+    // grpcOut = new GossipMessageClient(grpc::CreateChannel("localhost:50051",
+    //                       grpc::InsecureChannelCredentials()), journal_);
 
-    JLOG(journal_.debug()) << "gRPC outbound channel open\n";
+    // JLOG(journal_.debug()) << "gRPC outbound channel open\n";
 
-    //Start gRPC Gossip sub server
-    void * thisObject = this;
-    gossipServer::runArguments tArgs = {thisObject, journal_};
+    // //Start gRPC Gossip sub server
+    // void * thisObject = this;
+    // gossipServer::runArguments tArgs = {thisObject, journal_};
 
-    pthread_create(&gRPCthread,&gRPCthreadAttr,gossipServer::Run,&tArgs);
-    JLOG(journal_.debug()) << "gRPC inbound channel open\n";
+    // pthread_create(&gRPCthread,&gRPCthreadAttr,gossipServer::Run,&tArgs);
+    // JLOG(journal_.debug()) << "gRPC inbound channel open\n";
 
     if (inbound_)
         doAccept();
