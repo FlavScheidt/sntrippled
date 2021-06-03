@@ -275,15 +275,15 @@ PeerImp::send(std::shared_ptr<Message> const& m)
 
     //Squelching does not apply to validations
 
-    auto messageType = m->getMessageType();
-    if (messageType == 41)
-    {
-        // std::cout << "RYCB message type: " << messageType <<"\n";
-        int _grpcOut = grpcOut->toLibP2P(m, compressionEnabled_);
-        JLOG(journal_.info()) << "gRPC message sent with status " << _grpcOut << "\n";
-    }
-    else
-    {
+    // auto messageType = m->getMessageType();
+    // if (messageType == 41)
+    // {
+    //     // std::cout << "RYCB message type: " << messageType <<"\n";
+    //     int _grpcOut = grpcOut->toLibP2P(m, compressionEnabled_);
+    //     JLOG(journal_.info()) << "gRPC message sent with status " << _grpcOut << "\n";
+    // }
+    // else
+    // {
         auto validator = m->getValidatorKey();
         if (validator && !squelch_.expireSquelch(*validator))
             return;
@@ -328,7 +328,7 @@ PeerImp::send(std::shared_ptr<Message> const& m)
                     shared_from_this(),
                     std::placeholders::_1,
                     std::placeholders::_2)));
-    }
+    // }
 }
 
 void
