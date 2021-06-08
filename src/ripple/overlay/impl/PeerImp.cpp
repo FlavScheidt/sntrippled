@@ -55,6 +55,9 @@
 
 using namespace std::chrono_literals;
 
+//RYCB Beat me up, I'm doing ugly stuff
+pthread_mutex_t gRPClock;
+
 namespace ripple {
 
 namespace {
@@ -206,12 +209,14 @@ PeerImp::run()
     //Start the gRPC client
     grpcOut = new GossipMessageClient(grpc::CreateChannel("localhost:50051",
                           grpc::InsecureChannelCredentials()), journal_);
-
     JLOG(journal_.debug()) << "gRPC outbound channel open\n";
 
     //Start gRPC Gossip sub server
     void * thisObject = this;
     gossipServer::runArguments tArgs = {thisObject, journal_};
+
+    if (pthread_mutex_init(&gRPClock, NULL) != 0)
+        JLOG(journal_.debug()) << "Failed to initiate mutex for the gRPC server\n";
 
     pthread_create(&gRPCthread,&gRPCthreadAttr,gossipServer::Run,&tArgs);
     JLOG(journal_.debug()) << "gRPC inbound channel open\n";
@@ -278,9 +283,8 @@ PeerImp::send(std::shared_ptr<Message> const& m)
     auto messageType = m->getMessageType();
     if (messageType == 41)
     {
-        std::cout << "RYCB message type: " << messageType <<"\n";
         int _grpcOut = grpcOut->toLibP2P(m, compressionEnabled_);
-        JLOG(journal_.info()) << "gRPC message sent with status " << _grpcOut << "\n";
+        JLOG(journal_.info()) << "gRPC message sent with status " << _grpcOut;
     }
     // else
     // {

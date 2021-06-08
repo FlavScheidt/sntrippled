@@ -6,7 +6,10 @@
 #include <boost/beast/core/ostream.hpp>
 
 //In this case, the rippled acts as the server, receiving the validation and responding with the status
-int gRPCportNum = 2;
+
+//RYCB Beat me up, I'm doing ugly stuff
+int gRPCportNum = 1;
+
 
 namespace gossipServer
 {
@@ -22,12 +25,23 @@ namespace gossipServer
         beast::Journal journal = static_cast<beast::Journal>(args->journal);
         // ripple::PeerImp *peerObject = static_cast<ripple::PeerImp *>(upperObject);
 
+        gossipServer::GossipMessageImpl *grpcIn;
+
+        pthread_mutex_lock(&gRPClock);
+        grpcIn = new GossipMessageImpl(journal);
+
         if (gRPCportNum == 2)
         {
-            gossipServer::GossipMessageImpl *grpcIn;
-            grpcIn = new GossipMessageImpl(journal);
+            pthread_mutex_unlock(&gRPClock);
+            JLOG(journal.debug()) << "Thread number " << pthread_self() <<  " initiating gRPC server";
 
             grpcIn->ConnectAndRun(args->upperObject);
+        }
+        else
+        {
+            pthread_mutex_unlock(&gRPClock);
+            JLOG(journal.debug()) << "Thread number " << pthread_self() <<  " trying to initiate new gRPC server. Server won't be started for safety";
+            // delete grpcIn;
         }
 
     }
@@ -45,13 +59,14 @@ namespace gossipServer
         //Cause there are threads here and they made my day harder
         // journal_ = journal;
         std::string portNumber;
+
+        gRPCportNum++;
         int gRPCportNumAux = gRPCportNum;
 
         portNumber = boost::lexical_cast<std::string>(gRPCportNumAux);
 
         gRPCport = "0.0.0.0:2005" + portNumber;
 
-        gRPCportNum++;
         JLOG(journal_.debug()) << "gRPC server object created succesfully";
 
     }
@@ -91,7 +106,6 @@ namespace gossipServer
         cq_ = builder.AddCompletionQueue();
         // Finally assemble the server.
         server_ = builder.BuildAndStart();
-        // std::cout << "gRPC Server listening on " << server_a
         JLOG(journal_.debug()) << "gRPC server listening on port " << gRPCport;
         // Proceed to the server's main loop.
         HandleRpcs(upperObject);
@@ -136,8 +150,10 @@ namespace gossipServer
             // part of its FINISH state.
             new CallData(service_, cq_, upperObject, journal_);
             // // The actual processing.
-            JLOG(journal_.debug()) << "gRPC message received"; //the message processing goes here
-            // std::cout << gossip.message() << std::endl;
+            JLOG(journal_.debug()) << "gRPC message received"; 
+            //the message processing goes here
+            std::cout << "------------------------------------" << std::endl;
+            std::cout << gossip.message() << std::endl;
 
             //RYCB
             //Invocking the protocol to treat the message
@@ -147,12 +163,8 @@ namespace gossipServer
             // and invoke invokeProtocolMessage(). Then I just need to pray.
 
             //Here is the copy
-
             bytes_transferred = boost::asio::buffer_copy(read_buffer_grpc.prepare(gossip.message().size()), boost::asio::buffer(gossip.message()));
             read_buffer_grpc.commit(bytes_transferred);
-
-            //Print on the standard output
-            // dump_buffer(std::cout << "after: ", read_buffer_grpc);
             
             //Print on the log
             if (auto stream = journal_.trace())
@@ -165,12 +177,13 @@ namespace gossipServer
             }
 
             //Prepare the buffer to be read
-            read_buffer_grpc.commit(bytes_transferred);
+            // read_buffer_grpc.commit(bytes_transferred);
 
             //Hin is zero just because today is tuesday
             //peerObject is the handler
             std::size_t  hint = 0;
             ripple::PeerImp *peerObject = static_cast<ripple::PeerImp *>(upperObject);
+
 
             //Read and process buffer, unless there is an error on invokeProtoclMessage
             while (read_buffer_grpc.size() > 0)
