@@ -106,7 +106,7 @@ console.log("------------------------------------------------------------------"
   //}
   //console.log('message set');
   node1.pubsub.on(topic, (msg) => {
-   //console.log(`I received: ${uint8ArrayToString(msg.data)}`)
+   console.log('I received: ', msg.data)
    client.toRippled({message: msg.data}, function(err, response) {
     	console.log(Date.now(), ' | gRPC | Message sent to rippled server');
     });
