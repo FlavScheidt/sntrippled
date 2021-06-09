@@ -341,14 +341,18 @@ invokeProtocolMessage(
     Handler& handler,
     std::size_t& hint)
 {
+    std::cout << pthread_self() << "E ntering invoke protocol message " << std::endl;
     std::pair<std::size_t, boost::system::error_code> result = {0, {}};
 
     auto const size = boost::asio::buffer_size(buffers);
+
+    std::cout << "Got the message size " << size << std::endl;
 
     if (size == 0)
         return result;
 
     auto header = detail::parseMessageHeader(result.second, buffers, size);
+    std::cout  << pthread_self() << " parsed header" << std::endl;
 
     // If we can't parse the header then it may be that we don't have enough
     // bytes yet, or because the message was cut off (if error_code is success).

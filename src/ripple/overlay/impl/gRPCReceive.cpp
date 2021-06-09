@@ -24,6 +24,7 @@ namespace gossipServer
         
         beast::Journal journal = static_cast<beast::Journal>(args->journal);
         // ripple::PeerImp *peerObject = static_cast<ripple::PeerImp *>(upperObject);
+        std::cout << "Initiate journal" << std::endl;
 
         gossipServer::GossipMessageImpl *grpcIn;
 
@@ -34,14 +35,17 @@ namespace gossipServer
         {
             pthread_mutex_unlock(&gRPClock);
             JLOG(journal.debug()) << "Thread number " << pthread_self() <<  " initiating gRPC server";
+            std::cout << "Thread number " << pthread_self() <<  " initiating gRPC server" << std::endl;
 
             grpcIn->ConnectAndRun(args->upperObject);
         }
         else
         {
             pthread_mutex_unlock(&gRPClock);
-            JLOG(journal.debug()) << "Thread number " << pthread_self() <<  " trying to initiate new gRPC server. Server won't be started for safety";
+            JLOG(journal.debug()) << "Thread number " << pthread_self() <<  " trying to initiate new gRPC server. Server won't be started for safety. Destroying object alocated";
             // delete grpcIn;
+
+            std::cout << "Thread number " << pthread_self() <<  " trying to initiate new gRPC server. Server won't be started for safety" << std::endl;
         }
 
     }
@@ -68,6 +72,7 @@ namespace gossipServer
         gRPCport = "0.0.0.0:2005" + portNumber;
 
         JLOG(journal_.debug()) << "gRPC server object created succesfully";
+        std::cout << "gRPC server object created succesfully" << std::endl;
 
     }
 
@@ -94,6 +99,7 @@ namespace gossipServer
     void
     GossipMessageImpl::ConnectAndRun(void * upperObject)
     {
+        std::cout << "Enter c0onnect and run" << std::endl;
         std::string server_address(gRPCport);
         ServerBuilder builder;
         // Listen on the given address without any authentication mechanism.
@@ -106,7 +112,9 @@ namespace gossipServer
         cq_ = builder.AddCompletionQueue();
         // Finally assemble the server.
         server_ = builder.BuildAndStart();
+        // std::cout << "gRPC Server listening on " << server_a
         JLOG(journal_.debug()) << "gRPC server listening on port " << gRPCport;
+        std::cout << "gRPC server listening on port " << gRPCport << std::endl;
         // Proceed to the server's main loop.
         HandleRpcs(upperObject);
 
@@ -165,6 +173,10 @@ namespace gossipServer
             //Here is the copy
             bytes_transferred = boost::asio::buffer_copy(read_buffer_grpc.prepare(gossip.message().size()), boost::asio::buffer(gossip.message()));
             read_buffer_grpc.commit(bytes_transferred);
+
+
+            //Print on the standard output
+            // dump_buffer(std::cout << "after: ", read_buffer_grpc);
             
             //Print on the log
             if (auto stream = journal_.trace())
@@ -223,6 +235,7 @@ namespace gossipServer
     void 
     GossipMessageImpl::HandleRpcs(void * upperObject) 
     {
+        std::cout << "Handle rpcs" <<std::endl;
         // Spawn a new CallData instance to serve new clients.
         new GossipMessageImpl::CallData(&service_, cq_.get(), upperObject, journal_);
         void* tag;  // uniquely identifies a request.
