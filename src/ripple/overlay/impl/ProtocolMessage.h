@@ -268,6 +268,7 @@ template <
 std::shared_ptr<T>
 parseMessageContent(MessageHeader const& header, Buffers const& buffers)
 {
+    std::cout << pthread_self()  << "|" << "Enter parse message content" << std::endl;
     auto const m = std::make_shared<T>();
 
     ZeroCopyInputStream<Buffers> stream(buffers);
@@ -303,6 +304,7 @@ template <
 bool
 invoke(MessageHeader const& header, Buffers const& buffers, Handler& handler)
 {
+    std::cout << pthread_self()  << "|" << "Enter invoke" << std::endl;
     auto const m = parseMessageContent<T>(header, buffers);
     if (!m)
         return false;
