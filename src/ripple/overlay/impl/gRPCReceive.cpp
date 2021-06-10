@@ -72,7 +72,6 @@ namespace gossipServer
         gRPCport = "0.0.0.0:2005" + portNumber;
 
         JLOG(journal_.debug()) << "gRPC server object created succesfully";
-        std::cout << "gRPC server object created succesfully" << std::endl;
 
     }
 
@@ -99,7 +98,6 @@ namespace gossipServer
     void
     GossipMessageImpl::ConnectAndRun(void * upperObject)
     {
-        std::cout << "Enter c0onnect and run" << std::endl;
         std::string server_address(gRPCport);
         ServerBuilder builder;
         // Listen on the given address without any authentication mechanism.
@@ -114,7 +112,6 @@ namespace gossipServer
         server_ = builder.BuildAndStart();
         // std::cout << "gRPC Server listening on " << server_a
         JLOG(journal_.debug()) << "gRPC server listening on port " << gRPCport;
-        std::cout << "gRPC server listening on port " << gRPCport << std::endl;
         // Proceed to the server's main loop.
         HandleRpcs(upperObject);
 
@@ -162,7 +159,8 @@ namespace gossipServer
             //the message processing goes here
             std::cout << "------------------------------------" << std::endl;
             std::cout << gossip.message() << std::endl;
-
+            std::cout << "------------------------------------" << std::endl;
+ 
             //RYCB
             //Invocking the protocol to treat the message
             // Since we are not usting beast to receive the message, we don't nedd

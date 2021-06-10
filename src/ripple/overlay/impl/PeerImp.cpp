@@ -256,6 +256,16 @@ PeerImp::stop()
 
 //------------------------------------------------------------------------------
 
+std::string
+bufferToString(std::vector<unsigned char> const input)
+{
+  std::string output;
+  for (char c: input)
+    output.push_back(c);
+
+  return output;
+}
+
 void
 PeerImp::send(std::shared_ptr<Message> const& m)
 {
@@ -283,6 +293,13 @@ PeerImp::send(std::shared_ptr<Message> const& m)
     auto messageType = m->getMessageType();
     if (messageType == 41)
     {
+        // std::vector<unsigned char> const _buff = m->getBuffer(compressionEnabled_);
+        // std::string _buffer = bufferToString(_buff);
+        // std::cout << "___________________________________________" << std::endl;
+        // std::cout << "To send" <<std::endl;
+        // std::cout << _buffer << std::endl;
+        // std::cout << "___________________________________________" << std::endl;
+
         int _grpcOut = grpcOut->toLibP2P(m, compressionEnabled_);
         JLOG(journal_.info()) << "gRPC message sent with status " << _grpcOut;
     }
