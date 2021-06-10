@@ -61,11 +61,8 @@ namespace gossipClient
         //Need to extract the bytes from the message
         //Then transform the bytes in a string (it seems so ugly)
         std::vector<unsigned char> const _buff = m->getBuffer(compressionEnabled_);
-
-
-
         // std::string _buffer = base64_encode(bufferToString(_buff));
-        // std::string _buffer = bufferToString(_buff);
+        std::string _buffer = bufferToString(_buff);
         // std::cout << "___________________________________________" << std::endl;
         // std::cout << "Sending via gRPC" <<std::endl;
         // std::cout << _buffer << std::endl;
@@ -76,8 +73,8 @@ namespace gossipClient
         //The conversion to string may be distorting the message
         //So I'm converting the buffer into a void pointer and getting the vector size
         //Fingers crossed
-        gossip.set_message((void*)&_buff, _buff.size());
-        // gossip.set_message(_buff);
+        // gossip.set_message((void*)&_buff, _buff.size());
+        gossip.set_message(_buffer);
 
 
         // Container for the data we expect from the server.

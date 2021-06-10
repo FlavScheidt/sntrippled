@@ -157,9 +157,9 @@ namespace gossipServer
             // // The actual processing.
             JLOG(journal_.debug()) << "gRPC message received"; 
             //the message processing goes here
-            std::cout << "------------------------------------" << std::endl;
-            std::cout << gossip.message() << std::endl;
-            std::cout << "------------------------------------" << std::endl;
+            // std::cout << "------------------------------------" << std::endl;
+            // std::cout << gossip.message() << std::endl;
+            // std::cout << "------------------------------------" << std::endl;
  
             //RYCB
             //Invocking the protocol to treat the message
