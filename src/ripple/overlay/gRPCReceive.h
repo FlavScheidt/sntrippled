@@ -89,7 +89,6 @@ namespace gossipServer
             boost::beast::multi_buffer read_buffer_grpc;
 
             private:
-            beast::Journal const journal_; 
             // The means of communication with the gRPC runtime for an asynchronous
             // server.
             GossipMessage::AsyncService* service_;
@@ -108,6 +107,8 @@ namespace gossipServer
             // Let's implement a tiny state machine with the following states.
             enum CallStatus { CREATE, PROCESS, FINISH };
             CallStatus status_;  // The current serving state.
+
+            beast::Journal const journal_; 
         };
 
         void HandleRpcs(void * upperObject);

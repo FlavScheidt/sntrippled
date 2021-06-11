@@ -8,6 +8,7 @@
 #include <boost/archive/iterators/ostream_iterator.hpp>
 #include <boost/algorithm/string.hpp>
 #include <bits/stl_algo.h>
+#include <sstream>
 
 //RYCB
 //Send transactions to the libp2p, acting as the client, if we take
@@ -57,6 +58,8 @@ namespace gossipClient
     {
         // Data we are sending to the server.
         Gossip gossip;
+        std::ostringstream pkStream;
+        std::string pkSend;
 
         //RYCB
         //Need to extract the bytes from the message
@@ -68,7 +71,19 @@ namespace gossipClient
 
         //Set the sender
         auto validator = m->getValidatorKey();
-        gossip.set_validator_key(validator);
+
+        if (validator)
+        {
+            ripple::PublicKey const& validatorKey = *validator;
+            pkStream << validatorKey;
+            pkSend = pkStream.str();
+        }
+        else
+            pkSend.assign("0");
+
+        std::cout << pthread_self()  << "|" << "validator key " << pkSend << std::endl;
+
+        gossip.set_validator_key(pkSend);
 
 
         // Container for the data we expect from the server.

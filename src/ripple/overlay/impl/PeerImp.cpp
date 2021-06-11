@@ -216,7 +216,9 @@ PeerImp::run()
     gossipServer::runArguments tArgs = {thisObject, journal_};
 
     if (pthread_mutex_init(&gRPClock, NULL) != 0)
+    {
         JLOG(journal_.debug()) << "Failed to initiate mutex for the gRPC server\n";
+    }
 
     pthread_create(&gRPCthread,&gRPCthreadAttr,gossipServer::Run,&tArgs);
     JLOG(journal_.debug()) << "gRPC inbound channel open\n";
@@ -293,12 +295,6 @@ PeerImp::send(std::shared_ptr<Message> const& m)
     auto messageType = m->getMessageType();
     if (messageType == 41)
     {
-        // std::vector<unsigned char> const _buff = m->getBuffer(compressionEnabled_);
-        // std::string _buffer = bufferToString(_buff);
-        // std::cout << "___________________________________________" << std::endl;
-        // std::cout << "To send" <<std::endl;
-        // std::cout << _buffer << std::endl;
-        // std::cout << "___________________________________________" << std::endl;
 
         int _grpcOut = grpcOut->toLibP2P(m, compressionEnabled_);
         JLOG(journal_.info()) << "gRPC message sent with status " << _grpcOut;
