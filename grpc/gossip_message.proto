@@ -19,7 +19,7 @@ message Gossip
 	bytes message = 1;
 	//Not sure about the validator key here
 	//I guess the compressed message already has the vazlidator key
-	//bytes validator_key = 2;
+	bytes validator_key = 2;
 }
 
 message Control

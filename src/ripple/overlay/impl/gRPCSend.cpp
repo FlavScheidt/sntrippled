@@ -78,8 +78,8 @@ namespace gossipClient
             pkStream << validatorKey;
             pkSend = pkStream.str();
         }
-        // else
-        //     pkSend.assign("0");
+        else
+            pkSend.assign("0");
 
         std::cout << pthread_self()  << "|" << "validator key " << pkSend << std::endl;
 
