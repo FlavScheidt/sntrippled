@@ -155,7 +155,7 @@ namespace gossipServer
             // part of its FINISH state.
             new CallData(service_, cq_, upperObject, journal_);
             // // The actual processing.
-            JLOG(journal_.debug()) << "gRPC message received"; 
+            // JLOG(journal_.debug()) << "gRPC message received"; 
             //the message processing goes here
             // std::cout << "------------------------------------" << std::endl;
             // std::cout << gossip.message() << std::endl;
@@ -177,14 +177,14 @@ namespace gossipServer
             // dump_buffer(std::cout << "after: ", read_buffer_grpc);
             
             //Print on the log
-            if (auto stream = journal_.trace())
-            {   
-                if (bytes_transferred > 0)
-                    stream << "onReadGRPCMessage: " << bytes_transferred << " bytes";
-            // JLOG(journal_.debug()) << "onReadGRPCMessage: " << bytes_transferred << " bytes";
-                else
-                    stream << "onReadGRPCMessage";
-            }
+            // if (auto stream = journal_.trace())
+            // {   
+            //     if (bytes_transferred > 0)
+            //         stream << "onReadGRPCMessage: " << bytes_transferred << " bytes";
+            // // JLOG(journal_.debug()) << "onReadGRPCMessage: " << bytes_transferred << " bytes";
+            //     else
+            //         stream << "onReadGRPCMessage";
+            // }
 
             //Prepare the buffer to be read
             // read_buffer_grpc.commit(bytes_transferred);
