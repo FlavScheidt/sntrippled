@@ -67,11 +67,10 @@ namespace gossipClient
 
         std::vector<unsigned char> const _buff = m->getBuffer(compressionEnabled_);
         std::string _buffer = bufferToString(_buff);
-        gossip.set_message(_buffer);
+        // gossip.set_message(_buffer);
 
         //Set the sender
         auto validator = m->getValidatorKey();
-
         if (validator)
         {
             ripple::PublicKey const& validatorKey = *validator;
@@ -82,8 +81,9 @@ namespace gossipClient
             pkSend.assign("0");
 
         std::cout << pthread_self()  << "|" << "validator key " << pkSend << std::endl;
-
-        // gossip.set_validator_key(pkSend);
+        
+        gossip.set_message(_buffer);
+        gossip.set_validator_key(pkSend);
 
 
         // Container for the data we expect from the server.
