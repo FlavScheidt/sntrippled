@@ -10,6 +10,8 @@
 #include <bits/stl_algo.h>
 #include <sstream>
 
+#include <ripple/protocol/tokens.h>
+
 //RYCB
 //Send transactions to the libp2p, acting as the client, if we take
 //the pov of the gRPC tutorials
@@ -71,16 +73,23 @@ namespace gossipClient
 
         //Set the sender
         auto validator = m->getValidatorKey();
+        // std::cout << pthread_self()  << "|" << " full validator key "  << ripple::toBase58(TokenType::NodePublic, m->getValidatorKey);
         if (validator)
         {
             ripple::PublicKey const& validatorKey = *validator;
-            pkStream << validatorKey;
-            pkSend = pkStream.str();
+
+            std::cout << pthread_self()  << "|" << " full validator key "  << ripple::toBase58(ripple::TokenType::NodePublic, validatorKey) << std::endl;
+
+            // pkStream << validatorKey;
+            // pkSend = pkStream.str();
+
+            pkSend.assign(ripple::toBase58(ripple::TokenType::NodePublic, validatorKey));
         }
         else
             pkSend.assign("0");
+        
+        std::cout << pthread_self()  << "|" << "  validator key sent "  << pkSend << std::endl;
 
-        std::cout << pthread_self()  << "|" << "validator key " << pkSend << std::endl;
         
         gossip.set_message(_buffer);
         gossip.set_validator_key(pkSend);
@@ -100,22 +109,7 @@ namespace gossipClient
         Status status = stub_->toLibP2P(&context, gossip, &control);
 
         // Act upon its status.
-        if (status.ok()) 
-        {
-            if (auto stream = journal_.trace())
-            {
-                stream << "Validation Sent via gRPC succesfully";
-            }
-            return 0;
-        } 
-        else 
-        {
-            if (auto stream = journal_.trace())
-            {
-                stream << status.error_code() << ": " << status.error_message()
-                    << std::endl;
-            }
+        if (!status.ok()) 
             return 1;
-        }
     }
 }
