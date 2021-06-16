@@ -29,6 +29,9 @@ const bs58 = require('ripple-bs58');
 const base64 = require('base-64');
 const sha256 = require('sha256');
 
+fs = require('fs');
+const myKey = fs.readFileSync('key.out', 'utf8').split('\n')[0];
+console.log(myKey)
 function hexToBase58(key) {
   const payload = Buffer.from("1C" + key, 'hex');
   const checksum = Buffer.from(sha256.x2(payload), 'hex').slice(0,4);
@@ -121,9 +124,12 @@ console.log("------------------------------------------------------------------"
     {
     	msg2send = JSON.parse(msg.data)
         console.log('I received: ', msg2send)
-   	client.toRippled({message: msg2send.msg}, function(err, response) {
-    	   console.log(Date.now(), ' | gRPC | Message sent to rippled server');
-    	});
+        if(msg2send.validator_key != myKey)
+        {
+   		client.toRippled({message: msg2send.msg}, function(err, response) {
+    	   		console.log(Date.now(), ' | gRPC | Message sent to rippled server');
+    		});
+        }
    }
    catch(e)
 	{
