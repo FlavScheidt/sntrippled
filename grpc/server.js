@@ -27,6 +27,16 @@ const Gossipsub = require('libp2p-gossipsub')
 const uint8ArrayFromString = require('uint8arrays/from-string')
 const uint8ArrayToString = require('uint8arrays/to-string')
 const MulticastDNS = require('libp2p-mdns')
+const bs58 = require('ripple-bs58');
+const base64 = require('base-64');
+const sha256 = require('sha256');
+
+
+function hexToBase58(key) {
+  const payload = Buffer.from("1C" + key, 'hex');
+  const checksum = Buffer.from(sha256.x2(payload), 'hex').slice(0,4);
+  return bs58.encode(Buffer.concat([payload, checksum]));
+}
 
 const createNode = async() => {
     const node = await Libp2p.create({
@@ -72,20 +82,10 @@ const gosssib = async() => {
 
     node1.pubsub.on(topic, (msg) => {
         // console.log(`${uint8ArrayToString(msg.data)}`)
-        console.log(Date.now(), " | GossipSub | I received: ", msg.data)
+        //console.log(Date.now(), " | GossipSub | I received: ", msg.data)
     })
 
     await node1.pubsub.subscribe(topic)
-
-
-    // // node1 publishes "news" every second
-    // setInterval(() => {
-    //   my_node.pubsub.publish(topic, uint8ArrayFromString(''+node1.peerId._idB58String+', Validation Tx'))
-    //   for (let [peerIdString, peer] of node1.peerStore.peers.entries()) {
-    //       // peer { id, addresses, metadata, protocols }
-    //       console.log(peer.id._idB58String)
-    //     }
-    // }, 5000)
 }
 
 
@@ -109,13 +109,18 @@ function toLibP2P(call, callback) {
     //my_node.pubsub.publish(topic, uint8ArrayFromString('' + call.request.name + ', Validation Tx'))
 
     let buff = new Buffer(call.request.message);
-    let base64data = buff.toString('base64');
+    let base64data = buff.toString("base64");
     console.log("___________________________________________")
-    console.log(Date.now(), " | gRPC | I received: ",call.request.message)
-
+    //console.log(Date.now(), " | gRPC | I received Msg: ", call.request.message)
+    console.log(Date.now(), " | gRPC | Msg Validation key(native): ", call.request.validator_key.toString())
+    //console.log(Date.now(), " | gRPC | Msg Validation key(bs58): ", hexToBase58(call.request.validator_key))
+    
     // Wazen: gossibsub publish
-    my_node.pubsub.publish(topic, call.request.message)
-
+       //if(call.request.validator_key!="n94pUb4paSJo8pMimntNPYMyeyqrXwsMDcyArSgDcmLcGRwRq2D8")
+	//{ //my_node.pubsub.publish(topic, call.request.message)
+    msg_to_brodcast =JSON.stringify({msg:base64data, validator_key:call.request.validator_key.toString()})
+    my_node.pubsub.publish(topic, msg_to_brodcast) //publish the whole msg + validator key
+	//}
     console.log("___________________________________________")
     callback(null, {
         message: 'True'

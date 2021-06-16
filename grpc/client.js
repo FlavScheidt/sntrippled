@@ -15,7 +15,7 @@
  * limitations under the License.
  *
  */
-
+//Edited by Wazen 11/6
 //gossip section
 const Libp2p = require('libp2p')
 const TCP = require('libp2p-tcp')
@@ -25,8 +25,15 @@ const Gossipsub = require('libp2p-gossipsub')
 const uint8ArrayFromString = require('uint8arrays/from-string')
 const uint8ArrayToString = require('uint8arrays/to-string')
 const MulticastDNS = require('libp2p-mdns')
+const bs58 = require('ripple-bs58');
+const base64 = require('base-64');
+const sha256 = require('sha256');
 
-
+function hexToBase58(key) {
+  const payload = Buffer.from("1C" + key, 'hex');
+  const checksum = Buffer.from(sha256.x2(payload), 'hex').slice(0,4);
+  return bs58.encode(Buffer.concat([payload, checksum]));
+}
 
 var PROTO_PATH = __dirname + '/gossip_message.proto';
 var parseArgs = require('minimist');
@@ -105,14 +112,25 @@ console.log("------------------------------------------------------------------"
   //  mess = 'AAAA6wApCugBIoAAAAEmAAqu4CkoFJRnOhhzMPeiQk/QUdpy95wgfe72yP3/k/JZ18XqhmOLa7QJ7+YULlNwNCVqUBcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFAZL8sR3hL5qqcpwMNbqkiUGkM+vRjkojtbP7SgiBvxt5xzIQK7divurbJKMYI6AGpyGnZKSt+ty3Pv+TIzb2Bai/OEeHZGMEQCIAw2dE1DjbWleyeJQ0DlhygRLgBehhhcRe75B3yGJADsAiBoH1TZ19hMEfBXwTR6DQkVvjx2vt/6i18IotHum8RSTQ==';
   //}
   //console.log('message set');
-  node1.pubsub.on(topic, (msg) => {
-   console.log('I received: ', msg.data)
-   client.toRippled({message: msg.data}, function(err, response) {
-    	console.log(Date.now(), ' | gRPC | Message sent to rippled server');
-    });
-  })
-  
  
+  node1.pubsub.on(topic, (msg) => {
+  //let buff = new Buffer(msg.data);
+  //let base64data = buff.toString('base64');
+   //console.log("-------------------------")
+   try
+    {
+    	msg2send = JSON.parse(msg.data)
+        console.log('I received: ', msg2send)
+   	client.toRippled({message: msg2send.msg}, function(err, response) {
+    	   console.log(Date.now(), ' | gRPC | Message sent to rippled server');
+    	});
+   }
+   catch(e)
+	{
+	//console.log(e)
+	}
+  })
+
  // client.toRippled({message: mess}, function(err, response) {
  //   console.log('Message sent');
  // });
