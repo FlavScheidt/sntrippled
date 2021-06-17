@@ -299,8 +299,8 @@ PeerImp::send(std::shared_ptr<Message> const& m)
         int _grpcOut = grpcOut->toLibP2P(m, compressionEnabled_);
         JLOG(journal_.info()) << "gRPC message sent with status " << _grpcOut;
     }
-    // else
-    // {
+    else
+    {
         auto validator = m->getValidatorKey();
         if (validator && !squelch_.expireSquelch(*validator))
             return;
@@ -345,7 +345,7 @@ PeerImp::send(std::shared_ptr<Message> const& m)
                     shared_from_this(),
                     std::placeholders::_1,
                     std::placeholders::_2)));
-    // }
+    }
 }
 
 void
