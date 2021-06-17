@@ -32,8 +32,8 @@ mv db/* "db_${LOG_DATE}_${LOG_HOUR}_${LOG_MIN}_${LOG_SEC}/"
 #	Rename rename stdout log
 ###########################
 cd /root/sntrippled/my_build/
-
 mv log.out "log_${LOG_DATE}_${LOG_HOUR}_${LOG_MIN}_${LOG_SEC}.out"
+
 
 ###########################
 # STEP 4
@@ -52,7 +52,7 @@ mv log_client.out "logClient_${LOG_DATE}_${LOG_HOUR}_${LOG_MIN}_${LOG_SEC}.out"
 cd /root/sntrippled/my_build/
 ./rippled --conf /opt/local/etc/rippled.cfg --quorum 1 >> log_quorum1.out &
 
-sleep 5m
+sleep 10m
 
 # ./rippled  stop --conf /opt/local/etc/rippled.cfg 
 
@@ -73,6 +73,9 @@ sleep 5m
 cd /root/sntrippled/grpc
 
 node server.js >> log_server.out &
+
+/root/sntrippled/my_build/rippled validator_info --conf /opt/local/etc/rippled.cfg | cat | grep "ephemeral_key" | cut -d ":" -f2 | cut -d "\"" -f2 > key.out
+
 node client.js >> log_client.out &
 
 sleep 45s
