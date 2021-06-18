@@ -120,7 +120,7 @@ console.log("------------------------------------------------------------------"
   //let buff = new Buffer(msg.data);
   //let base64data = buff.toString('base64');
    //console.log("-------------------------")
-console.log(msg.data.toString())
+   console.log(msg.data.toString())
    try
     {
     	msg2send = JSON.parse(msg.data)
@@ -135,12 +135,12 @@ console.log(msg.data.toString())
 
       var protoMessage = {message: stringMessage, validator_key: stringValidator}
 
+        msg2send = JSON.parse(msg.data)
 
-      console.log('I received: ', protoMessage.message)
       // if(msg2send.validator_key != myKey)
       // {
-         	client.toRippled(protoMessage, function(err, response) {
-          	   		console.log(Date.now(), ' | gRPC | Message sent to rippled server');});
+         	client.toRippled({message:msg.data}, function(err, response) {
+          	   console.log(Date.now(), ' | gRPC | Message sent to rippled server');});
       // }
    }
    catch(e)
