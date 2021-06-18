@@ -111,14 +111,14 @@ function toLibP2P(call, callback) {
     let buff = new Buffer(call.request.message);
     let base64data = buff.toString("base64");
     console.log("___________________________________________")
-    //console.log(Date.now(), " | gRPC | I received Msg: ", call.request.message)
+    console.log(Date.now(), " | gRPC | I received Msg: ", call.request.message.toString())
     console.log(Date.now(), " | gRPC | Msg Validation key(native): ", call.request.validator_key.toString())
     //console.log(Date.now(), " | gRPC | Msg Validation key(bs58): ", hexToBase58(call.request.validator_key))
     
     // Wazen: gossibsub publish
        //if(call.request.validator_key!="n94pUb4paSJo8pMimntNPYMyeyqrXwsMDcyArSgDcmLcGRwRq2D8")
 	//{ //my_node.pubsub.publish(topic, call.request.message)
-    msg_to_brodcast =JSON.stringify({msg:base64data, validator_key:call.request.validator_key.toString()})
+    msg_to_brodcast =JSON.stringify({msg:call.request.message.toString(), validator_key:call.request.validator_key.toString()})
     my_node.pubsub.publish(topic, msg_to_brodcast) //publish the whole msg + validator key
 	//}
     console.log("___________________________________________")

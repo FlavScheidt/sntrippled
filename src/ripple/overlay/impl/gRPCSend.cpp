@@ -90,8 +90,9 @@ namespace gossipClient
         
         std::cout << pthread_self()  << "|" << "  validator key sent "  << pkSend << std::endl;
 
-        
-        gossip.set_message(_buffer);
+        std::string _test = "Hello World =)";
+        // gossip.set_message(_buffer);
+        gossip.set_message(_test);
         gossip.set_validator_key(pkSend);
 
 

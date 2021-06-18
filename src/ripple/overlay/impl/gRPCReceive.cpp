@@ -174,7 +174,7 @@ namespace gossipServer
 
 
             //Print on the standard output
-            dump_buffer(std::cout << "after: ", read_buffer_grpc);
+            dump_buffer(std::cout << "MESSAGE RYCB: ", read_buffer_grpc);
             
             //Print on the log
             // if (auto stream = journal_.trace())
@@ -187,7 +187,7 @@ namespace gossipServer
             // }
 
             //Prepare the buffer to be read
-            // read_buffer_grpc.commit(bytes_transferred);
+            read_buffer_grpc.commit(bytes_transferred);
 
             //Hin is zero just because today is tuesday
             //peerObject is the handler

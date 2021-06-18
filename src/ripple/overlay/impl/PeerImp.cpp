@@ -295,7 +295,6 @@ PeerImp::send(std::shared_ptr<Message> const& m)
     auto messageType = m->getMessageType();
     if (messageType == 41)
     {
-
         int _grpcOut = grpcOut->toLibP2P(m, compressionEnabled_);
         JLOG(journal_.info()) << "gRPC message sent with status " << _grpcOut;
     }
