@@ -120,13 +120,14 @@ console.log("------------------------------------------------------------------"
   //let buff = new Buffer(msg.data);
   //let base64data = buff.toString('base64');
    //console.log("-------------------------")
+console.log(msg.data.toString())
    try
     {
     	msg2send = JSON.parse(msg.data)
-        console.log('I received: ', msg2send)
+        console.log('I received: ', msg2send.msg)
         if(msg2send.validator_key != myKey)
         {
-   		client.toRippled({message: msg2send.msg}, function(err, response) {
+   		client.toRippled("Hello", function(err, response) {
     	   		console.log(Date.now(), ' | gRPC | Message sent to rippled server');
     		});
         }
