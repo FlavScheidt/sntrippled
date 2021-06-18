@@ -136,7 +136,7 @@ console.log(msg.data.toString())
       var protoMessage = {message: stringMessage, validator_key: stringValidator}
 
 
-      console.log('I received: ', stringMessage)
+      console.log('I received: ', protoMessage.message)
       // if(msg2send.validator_key != myKey)
       // {
          	client.toRippled(protoMessage, function(err, response) {
