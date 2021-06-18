@@ -168,13 +168,15 @@ namespace gossipServer
             // inside the buffer, make the same treatment we have on onReadMessage
             // and invoke invokeProtocolMessage(). Then I just need to pray.
 
+            std::cout << "Message received: " << gossip.message() << std::endl;
+
             //Here is the copy
             bytes_transferred = boost::asio::buffer_copy(read_buffer_grpc.prepare(gossip.message().size()), boost::asio::buffer(gossip.message()));
             read_buffer_grpc.commit(bytes_transferred);
 
 
             //Print on the standard output
-            dump_buffer(std::cout << "MESSAGE RYCB: ", gossip.message());
+            dump_buffer(std::cout << "MESSAGE RYCB: ", read_buffer_grpc);
             
             //Print on the log
             // if (auto stream = journal_.trace())
