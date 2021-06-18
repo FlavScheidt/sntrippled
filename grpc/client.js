@@ -124,13 +124,24 @@ console.log(msg.data.toString())
    try
     {
     	msg2send = JSON.parse(msg.data)
-        console.log('I received: ', msg2send.msg)
-        if(msg2send.validator_key != myKey)
-        {
-   		client.toRippled("Hello", function(err, response) {
-    	   		console.log(Date.now(), ' | gRPC | Message sent to rippled server');
-    		});
-        }
+      // stringMessage = sg2send.msg;
+      var stringMessage = "Hello"
+      var stringValidator = msg2send.validator_key;
+
+      //Create the proto object to send to the Rippled server
+      // var protoMessage = new messages.Gossip();
+      // protoMessage.setmessage(stringMessage);
+      // protoMessage.setvalidator_key(msg2send.validator_key);
+
+      var protoMessage = {message: stringMessage, validator_key: stringValidator}
+
+
+      console.log('I received: ', stringMessage)
+      // if(msg2send.validator_key != myKey)
+      // {
+         	client.toRippled(protoMessage, function(err, response) {
+          	   		console.log(Date.now(), ' | gRPC | Message sent to rippled server');});
+      // }
    }
    catch(e)
 	{
