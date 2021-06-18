@@ -174,7 +174,7 @@ namespace gossipServer
 
 
             //Print on the standard output
-            dump_buffer(std::cout << "MESSAGE RYCB: ", read_buffer_grpc);
+            dump_buffer(std::cout << "MESSAGE RYCB: ", gossip.message());
             
             //Print on the log
             // if (auto stream = journal_.trace())
