@@ -214,7 +214,7 @@ namespace gossipServer
             // and we don't need to trigger onReadMessage using
             // bind() to call the funtion recursivelly as a handler
 
-            control.set_stream(true); //set the response
+            control.set_stream(1); //set the response
 
             // And we are done! Let the gRPC runtime know we've finished, using the
             // memory address of this instance as the uniquely identifying tag for

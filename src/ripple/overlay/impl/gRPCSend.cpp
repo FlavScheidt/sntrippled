@@ -77,9 +77,6 @@ namespace gossipClient
         if (validator)
         {
             ripple::PublicKey const& validatorKey = *validator;
-
-            std::cout << pthread_self()  << "|" << " full validator key "  << ripple::toBase58(ripple::TokenType::NodePublic, validatorKey) << std::endl;
-
             // pkStream << validatorKey;
             // pkSend = pkStream.str();
 
@@ -89,6 +86,7 @@ namespace gossipClient
             pkSend.assign("0");
         
         std::cout << pthread_self()  << "|" << "  validator key sent "  << pkSend << std::endl;
+        std::cout << pthread_self() << "|" << " message sent " << _buffer << std::endl;
 
         // std::string _test = "Hello World =)";
         gossip.set_message(_buffer);

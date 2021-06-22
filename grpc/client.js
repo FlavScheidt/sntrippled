@@ -38,7 +38,8 @@ function hexToBase58(key) {
   return bs58.encode(Buffer.concat([payload, checksum]));
 }
 
-var PROTO_PATH = __dirname + '/gossip_message.proto';
+// var PROTO_PATH = __dirname + '/gossip_message.proto';
+var PROTO_PATH = '/root/sntrippled/src/ripple/proto/org/xrpl/rpc/v1/gossip_message.proto'
 var parseArgs = require('minimist');
 var grpc = require('@grpc/grpc-js');
 var protoLoader = require('@grpc/proto-loader');
@@ -120,32 +121,33 @@ console.log("------------------------------------------------------------------"
   //let buff = new Buffer(msg.data);
   //let base64data = buff.toString('base64');
    //console.log("-------------------------")
-   console.log(msg.data.toString())
+    console.log(msg.data)
    try
     {
-    	msg2send = JSON.parse(msg.data)
-      // stringMessage = sg2send.msg;
-      var stringMessage = "Hello"
-      var stringValidator = msg2send.validator_key;
+    	//msg2send = JSON.parse(msg.data);
+       //console.log(new Buffer(msg2send.msg))
+      // var stringMessage = msg2send.msg;
+//      var stringMessage = "Hello";
+  //    var stringValidator = msg2send.validator_key;
 
       //Create the proto object to send to the Rippled server
       // var protoMessage = new messages.Gossip();
       // protoMessage.setmessage(stringMessage);
       // protoMessage.setvalidator_key(msg2send.validator_key);
 
-      var protoMessage = {message: stringMessage, validator_key: stringValidator}
+    //  var protoMessage = {message: stringMessage, validator_key: stringValidator};
 
-        msg2send = JSON.parse(msg.data)
+      //console.log(stringMessage);
 
       // if(msg2send.validator_key != myKey)
       // {
-         	client.toRippled({message:msg.data}, function(err, response) {
+         	client.toRippled({message: msg.data}, function(err, response) {
           	   console.log(Date.now(), ' | gRPC | Message sent to rippled server');});
       // }
    }
    catch(e)
 	{
-	//console.log(e)
+	console.log(e);
 	}
   })
 
