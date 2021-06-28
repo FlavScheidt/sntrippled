@@ -15,9 +15,31 @@
  * limitations under the License.
  *
  */
+//Edited by Wazen 11/6
+//gossip section
+const Libp2p = require('libp2p')
+const TCP = require('libp2p-tcp')
+const Mplex = require('libp2p-mplex')
+const { NOISE } = require('libp2p-noise')
+const Gossipsub = require('libp2p-gossipsub')
+const uint8ArrayFromString = require('uint8arrays/from-string')
+const uint8ArrayToString = require('uint8arrays/to-string')
+const MulticastDNS = require('libp2p-mdns')
+const bs58 = require('ripple-bs58');
+const base64 = require('base-64');
+const sha256 = require('sha256');
 
-var PROTO_PATH = __dirname + '/helloworld.proto';
+fs = require('fs');
+const myKey = fs.readFileSync('key.out', 'utf8').split('\n')[0];
+console.log(myKey)
+function hexToBase58(key) {
+  const payload = Buffer.from("1C" + key, 'hex');
+  const checksum = Buffer.from(sha256.x2(payload), 'hex').slice(0,4);
+  return bs58.encode(Buffer.concat([payload, checksum]));
+}
 
+// var PROTO_PATH = __dirname + '/gossip_message.proto';
+var PROTO_PATH = '/root/sntrippled/src/ripple/proto/org/xrpl/rpc/v1/gossip_message.proto'
 var parseArgs = require('minimist');
 var grpc = require('@grpc/grpc-js');
 var protoLoader = require('@grpc/proto-loader');
@@ -29,9 +51,52 @@ var packageDefinition = protoLoader.loadSync(
      defaults: true,
      oneofs: true
     });
-var hello_proto = grpc.loadPackageDefinition(packageDefinition).helloworld;
+var gossip_proto = grpc.loadPackageDefinition(packageDefinition).gossipmessage;
 
-function main() {
+////////////////////////////////////////////////////////////////////////////////////
+// Gossip section 
+const createNode = async () => {
+  const node = await Libp2p.create({
+    addresses: {
+      listen: ['/ip4/0.0.0.0/tcp/0']
+    },
+    modules: {
+      transport: [TCP],
+      streamMuxer: [Mplex],
+      connEncryption: [NOISE],
+      pubsub: Gossipsub,
+      peerDiscovery: [ MulticastDNS ]
+    },
+    config: {
+      peerDiscovery: {
+        mdns: {
+          interval: 20e3,
+          enabled: true
+        }
+      }
+    }
+  })
+
+  await node.start()
+
+  return node
+}
+//////////////////////////////////////////////////////////////
+
+
+async function main() {
+ // Gossip section 
+ const topic = 'validations'
+ const [node1] = await Promise.all([ createNode()  ])
+console.log("------------------------------------------------------------------")
+console.log("Peer Info: Gossib function")
+console.log("ID:", node1.peerId._idB58String)
+console.log("------------------------------------------------------------------")
+
+  await node1.pubsub.subscribe(topic)
+ 
+  /////////////////////////////////////////////////////
+  // console.log('enter main');
   var argv = parseArgs(process.argv.slice(2), {
     string: 'target'
   });
@@ -39,19 +104,56 @@ function main() {
   if (argv.target) {
     target = argv.target;
   } else {
-    target = 'localhost:50051';
+    target = 'localhost:20052';
   }
-  var client = new hello_proto.Greeter(target,
+  var client = new gossip_proto.GossipMessage(target,
                                        grpc.credentials.createInsecure());
-  var user;
-  if (argv._.length > 0) {
-    user = argv._[0]; 
-  } else {
-    user = 'world';
-  }
-  client.sayHello({name: user}, function(err, response) {
-    console.log('Greeting:', response.message);
-  });
+  console.log(Date.now(), ' | gRPC | Chanel created');
+  //var mess;
+  //if (argv._.length > 0) {
+  //  mess = argv._[0]; 
+  //} else {
+  //  mess = 'AAAA6wApCugBIoAAAAEmAAqu4CkoFJRnOhhzMPeiQk/QUdpy95wgfe72yP3/k/JZ18XqhmOLa7QJ7+YULlNwNCVqUBcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFAZL8sR3hL5qqcpwMNbqkiUGkM+vRjkojtbP7SgiBvxt5xzIQK7divurbJKMYI6AGpyGnZKSt+ty3Pv+TIzb2Bai/OEeHZGMEQCIAw2dE1DjbWleyeJQ0DlhygRLgBehhhcRe75B3yGJADsAiBoH1TZ19hMEfBXwTR6DQkVvjx2vt/6i18IotHum8RSTQ==';
+  //}
+  //console.log('message set');
+ 
+  node1.pubsub.on(topic, (msg) => {
+  //let buff = new Buffer(msg.data);
+  //let base64data = buff.toString('base64');
+   //console.log("-------------------------")
+    console.log(msg.data)
+   try
+    {
+    	//msg2send = JSON.parse(msg.data);
+       //console.log(new Buffer(msg2send.msg))
+      // var stringMessage = msg2send.msg;
+//      var stringMessage = "Hello";
+  //    var stringValidator = msg2send.validator_key;
+
+      //Create the proto object to send to the Rippled server
+      // var protoMessage = new messages.Gossip();
+      // protoMessage.setmessage(stringMessage);
+      // protoMessage.setvalidator_key(msg2send.validator_key);
+
+    //  var protoMessage = {message: stringMessage, validator_key: stringValidator};
+
+      //console.log(stringMessage);
+
+      // if(msg2send.validator_key != myKey)
+      // {
+         	client.toRippled({message: msg.data}, function(err, response) {
+          	   console.log(Date.now(), ' | gRPC | Message sent to rippled server');});
+      // }
+   }
+   catch(e)
+	{
+	console.log(e);
+	}
+  })
+
+ // client.toRippled({message: mess}, function(err, response) {
+ //   console.log('Message sent');
+ // });
 }
 
 main();

@@ -1,0 +1,112 @@
+https://github.com/ripple/rippled/blob/develop/Builds/linux/README.md
+
+ 
+
+UPDATE & install prerequisites
+
+$ apt-get update
+
+$ apt-get install -y gcc g++ wget git cmake pkg-config protobuf-compiler libprotobuf-dev libssl-dev
+
+ 
+
+BUILD BOOST
+
+$ wget https://boostorg.jfrog.io/artifactory/main/release/1.70.0/source/boost_1_70_0.tar.gz
+tar -xzf boost_1_70_0.tar.gz
+cd boost_1_70_0
+./bootstrap.sh
+./b2 headers
+./b2 -j <Num Parallel>
+
+ 
+
+<Num Parallel> is the number of threads to compile; you set it depending on hardware; if it crashes, just lower it
+
+ 
+
+GET Rippled
+
+$ git clone git@github.com:ripple/rippled.git
+
+$ cd rippled
+
+$ git checkout release (or master or develop)
+
+ 
+
+CONFIGURE BOOST PATH
+
+$ export BOOST_ROOT=/root/boost_1_70_0
+
+Alternatively, you can add DBOOST_ROOT=/root/boost_1_70_0 to the command line when invoking cmake below
+
+export PATH=$PATH:/opt/local
+ 
+
+GENERATE CONFIG, COMPILE, INSTALL
+
+mkdir my_build
+cd my_build
+cmake -DCMAKE_BUILD_TYPE=Debug -DBOOST_ROOT=/root/boost_1_70_0 -DCMAKE_INSTALL_PREFIX=/opt/local ..
+cmake --build . --target install -- -j <parallel jobs>
+
+ 
+
+The command "-DCMAKE_INSTALL_PREFIX=/opt/local" sets the path where to install the ripple exe and the config files
+
+ 
+
+CONFIG
+
+ 
+
+Info is below, but when you reach this step you can just let me know and I can give you the files with settings and keys already set up.
+
+ 
+
+    After building this way, the exe to build validator keys and tokens is not created, though.
+
+So these keys must be generated on another machine with a regular rippled installed from packages, then copied to local machine afterwards.
+
+The version of rippled package used for key generation doesn’t matter.
+
+Info on this step can be found here: https://xrpl.org/run-rippled-as-a-validator.html, step 3: Enable validation on your rippled server
+
+ 
+
+    After rippled is compiled, the ripple.cfg file and validators.txt need to be edited – to create the settings for our private network
+
+The 2 files should be located at =/opt/local/etc/…, with the rippled exe at =/opt/local/bin/…
+
+The info on how to set up rippled.cfg and validators.txt is too complex, we need to talk for this. At least this time, I will just give you the 2 files.
+
+ 
+
+ 
+
+START
+
+$ cd /opt/local/bin/
+
+$ sudo ./rippled –-conf /opt/ripple/etc/rippled.cfg –-quorum 2
+
+ 
+
+This will start the process in foreground
+
+ 
+
+Useful commands:
+
+ 
+
+$ cd /opt/local/bin/
+
+$ sudo ./rippled –conf /opt/ripple/etc/rippled.cfg peers (list current peers)
+
+$ sudo ./rippled –conf /opt/ripple/etc/rippled.cfg server_info (show server state)
+
+$ sudo ./rippled –conf /opt/ripple/etc/rippled.cfg account_info rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh (show genesis account balance)
+
+ 

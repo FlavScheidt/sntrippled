@@ -10,6 +10,20 @@ const uint8ArrayFromString = require('uint8arrays/from-string')
 const uint8ArrayToString = require('uint8arrays/to-string')
 const MulticastDNS = require('libp2p-mdns')
 
+var PROTO_PATH = __dirname + '/gossip_message.proto';
+var grpc = require('@grpc/grpc-js');
+var protoLoader = require('@grpc/proto-loader');
+var packageDefinition = protoLoader.loadSync(
+    PROTO_PATH, {
+        keepCase: true,
+        longs: String,
+        enums: String,
+        defaults: true,
+        oneofs: true
+    });
+
+
+
 const createNode = async () => {
   const node = await Libp2p.create({
     addresses: {
@@ -42,13 +56,13 @@ const createNode = async () => {
   const [node1] = await Promise.all([
     createNode()  ])
   console.log("------------------------------------------------------------------")
-  console.log("Peer Info: Gossib only")
+  console.log("Peer Info: Gossip only")
   console.log("ID:", node1.peerId._idB58String)
   console.log("------------------------------------------------------------------")
   node1.on('peer:discovery', (peer) => console.log('Discovered:', peer.id.toB58String()))
 
   node1.pubsub.on(topic, (msg) => {
-    console.log(`I received: ${uint8ArrayToString(msg.data)}`)
+    console.log(Date.now(), " | GossipSub | I received: ", msg.data)
   })
 
   await node1.pubsub.subscribe(topic)

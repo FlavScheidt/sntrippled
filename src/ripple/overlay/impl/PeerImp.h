@@ -35,12 +35,30 @@
 #include <ripple/protocol/STValidation.h>
 #include <ripple/resource/Fees.h>
 
+#include <ripple/overlay/gRPCSend.h>
+#include <ripple/overlay/gRPCReceive.h>
+
 #include <boost/circular_buffer.hpp>
 #include <boost/endian/conversion.hpp>
 #include <boost/optional.hpp>
 #include <boost/thread/shared_mutex.hpp>
 #include <cstdint>
 #include <queue>
+
+#include <grpc/grpc.h>
+#include <grpcpp/channel.h>
+// #include <grpcpp/client_context.h>
+// #include <grpcpp/create_channel.h>
+// #include <grpcpp/security/credentials.h>
+
+using grpc::Channel;
+// using grpc::ClientContext;
+// using grpc::ClientReader;
+// using grpc::ClientReaderWriter;
+// using grpc::ClientWriter;
+// using grpc::Status;
+using gossipClient::GossipMessageClient;
+using gossipServer::GossipMessageImpl;
 
 namespace ripple {
 
@@ -83,6 +101,17 @@ private:
     stream_type& stream_;
     boost::asio::strand<boost::asio::executor> strand_;
     waitable_timer timer_;
+
+    //RYCB
+    //Connect to the libp2p via gRPC
+    //Create inbound and outbound stubs
+
+    //Outbound behaves as a client 
+    // ChannelArguments args;
+    // Set the default compression algorithm for the channel.
+    // args.SetCompressionAlgorithm(GRPC_COMPRESS_GZIP);
+    gossipClient::GossipMessageClient *grpcOut;
+
 
     // Updated at each stage of the connection process to reflect
     // the current conditions as closely as possible.
@@ -155,6 +184,7 @@ private:
     Resource::Charge fee_;
     std::shared_ptr<PeerFinder::Slot> const slot_;
     boost::beast::multi_buffer read_buffer_;
+    // boost::beast::multi_buffer read_buffer_grpc;
     http_request_type request_;
     http_response_type response_;
     boost::beast::http::fields const& headers_;

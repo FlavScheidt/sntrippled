@@ -341,14 +341,18 @@ invokeProtocolMessage(
     Handler& handler,
     std::size_t& hint)
 {
+    std::cout << pthread_self()  << "|" << "Entering invoke protocol message " << std::endl;
     std::pair<std::size_t, boost::system::error_code> result = {0, {}};
 
     auto const size = boost::asio::buffer_size(buffers);
+
+    std::cout << "Got the message size " << size << std::endl;
 
     if (size == 0)
         return result;
 
     auto header = detail::parseMessageHeader(result.second, buffers, size);
+    std::cout  << pthread_self()  << "|" << " parsed header" << std::endl;
 
     // If we can't parse the header then it may be that we don't have enough
     // bytes yet, or because the message was cut off (if error_code is success).
@@ -356,7 +360,10 @@ invokeProtocolMessage(
     // no_message) or the compression algorithm is invalid (error_code is
     // protocol_error) and signal an error.
     if (!header)
+    {   
+        std::cout << pthread_self()  << "|"  << "Could not parse header" <<std::endl;
         return result;
+    }
 
     // We implement a maximum size for protocol messages. Sending a message
     // whose size exceeds this may result in the connection being dropped. A
@@ -366,6 +373,7 @@ invokeProtocolMessage(
         header->uncompressed_size > maximiumMessageSize)
     {
         result.second = make_error_code(boost::system::errc::message_size);
+        std::cout << pthread_self()  << "|"  << "Message too big" <<std::endl;
         return result;
     }
 
@@ -374,6 +382,7 @@ invokeProtocolMessage(
         header->algorithm != compression::Algorithm::None)
     {
         result.second = make_error_code(boost::system::errc::protocol_error);
+        std::cout << pthread_self()  << "|"  << "Message is compressed" << std::endl;
         return result;
     }
 
@@ -382,10 +391,13 @@ invokeProtocolMessage(
     if (header->total_wire_size > size)
     {
         hint = header->total_wire_size - size;
+        std::cout << pthread_self()  << "|"  << "We don't have the whole message" <<std::endl;
         return result;
     }
 
     bool success;
+
+    std::cout << pthread_self()  << "|" << "Message type " << header->message_type << std::endl;
 
     switch (header->message_type)
     {
@@ -483,6 +495,7 @@ invokeProtocolMessage(
             break;
         default:
             handler.onMessageUnknown(header->message_type);
+            std::cout << pthread_self()  << "|"  << "Message unknown" << std::endl;
             success = true;
             break;
     }

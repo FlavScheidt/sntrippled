@@ -34,13 +34,12 @@
 #include <ripple/beast/core/LexicalCast.h>
 #include <ripple/beast/core/SemanticVersion.h>
 #include <ripple/nodestore/DatabaseShard.h>
-
-
 #include <ripple/overlay/Cluster.h>
 #include <ripple/overlay/impl/PeerImp.h>
 #include <ripple/overlay/impl/Tuning.h>
 #include <ripple/overlay/predicates.h>
 #include <ripple/protocol/digest.h>
+
 
 #include <boost/algorithm/clamp.hpp>
 #include <boost/algorithm/string.hpp>
@@ -54,57 +53,10 @@
 #include <numeric>
 #include <sstream>
 
-#include <iostream>
-#include <string>
-
-#include <grpcpp/grpcpp.h>
-
-#include<org/xrpl/rpc/v1/helloworld.grpc.pb.h>
-
-using grpc::Channel;
-using grpc::ClientContext;
-using grpc::Status;
-using helloworld::HelloRequest;
-using helloworld::HelloReply;
-using helloworld::Greeter;
-
 using namespace std::chrono_literals;
 
-class GreeterClient {
- public:
-  GreeterClient(std::shared_ptr<Channel> channel)
-      : stub_(Greeter::NewStub(channel)) {}
-
-  // Assembles the client's payload, sends it and presents the response back
-  // from the server.
-  std::string SayHello(const std::string& user) {
-    // Data we are sending to the server.
-    HelloRequest request;
-    request.set_name(user);
-
-    // Container for the data we expect from the server.
-    HelloReply reply;
-
-    // Context for the client. It could be used to convey extra information to
-    // the server and/or tweak certain RPC behaviors.
-    ClientContext context;
-
-    // The actual RPC.
-    Status status = stub_->SayHello(&context, request, &reply);
-
-    // Act upon its status.
-    if (status.ok()) {
-      return reply.message();
-    } else {
-      std::cout << status.error_code() << ": " << status.error_message()
-                << std::endl;
-      return "RPC failed";
-    }
-  }
-
- private:
-  std::unique_ptr<Greeter::Stub> stub_;
-};
+//RYCB Beat me up, I'm doing ugly stuff
+pthread_mutex_t gRPClock;
 
 namespace ripple {
 
@@ -203,6 +155,10 @@ stringIsUint256Sized(std::string const& pBuffStr)
 void
 PeerImp::run()
 {
+    pthread_t gRPCthread;
+    pthread_attr_t gRPCthreadAttr;
+    pthread_attr_init(&gRPCthreadAttr);
+
     if (!strand_.running_in_this_thread())
         return post(strand_, std::bind(&PeerImp::run, shared_from_this()));
 
@@ -249,6 +205,24 @@ PeerImp::run()
             previousLedgerHash_ = *previous;
     }
 
+    //RYCB
+    //Start the gRPC client
+    grpcOut = new GossipMessageClient(grpc::CreateChannel("localhost:50051",
+                          grpc::InsecureChannelCredentials()), journal_);
+    JLOG(journal_.debug()) << "gRPC outbound channel open";
+
+    //Start gRPC Gossip sub server
+    void * thisObject = this;
+    gossipServer::runArguments tArgs = {thisObject, journal_};
+
+    if (pthread_mutex_init(&gRPClock, NULL) != 0)
+    {
+        JLOG(journal_.debug()) << "Failed to initiate mutex for the gRPC server";
+    }
+
+    pthread_create(&gRPCthread,&gRPCthreadAttr,gossipServer::Run,&tArgs);
+    JLOG(journal_.debug()) << "gRPC inbound channel open\n";
+
     if (inbound_)
         doAccept();
     else
@@ -284,11 +258,21 @@ PeerImp::stop()
 
 //------------------------------------------------------------------------------
 
+std::string
+bufferToString(std::vector<unsigned char> const input)
+{
+  std::string output;
+  for (char c: input)
+    output.push_back(c);
+
+  return output;
+}
+
 void
 PeerImp::send(std::shared_ptr<Message> const& m)
 {
 
-    std::string target_str;
+    // std::string target_str;
 
     if (!strand_.running_in_this_thread())
         return post(strand_, std::bind(&PeerImp::send, shared_from_this(), m));
@@ -297,59 +281,70 @@ PeerImp::send(std::shared_ptr<Message> const& m)
     if (detaching_)
         return;
 
-    auto validator = m->getValidatorKey();
-    if (validator && !squelch_.expireSquelch(*validator))
-        return;
+    //RYCB
+    //Get the message type, if it is a validation (41),
+    //Sends to the gRPC server to be sent using gossipsub
+    //Otherwise, sends using asio
 
-    overlay_.reportTraffic(
-        safe_cast<TrafficCount::category>(m->getCategory()),
-        false,
-        static_cast<int>(m->getBuffer(compressionEnabled_).size()));
+    //16mar modification
+    //Cant put the message on the queue when it is a validation
+    //Otherwise it will be sent anyway
 
-    // std::cout << " RYCB: Message category: " << m->getType(m) << "\n";
+    //Squelching does not apply to validations
 
-    auto sendq_size = send_queue_.size();
-
-    if (sendq_size < Tuning::targetSendQueue)
+    auto messageType = m->getMessageType();
+    if (messageType == 41)
     {
-        // To detect a peer that does not read from their
-        // side of the connection, we expect a peer to have
-        // a small senq periodically
-        large_sendq_ = 0;
+        int _grpcOut = grpcOut->toLibP2P(m, compressionEnabled_);
+        JLOG(journal_.info()) << "gRPC message sent with status " << _grpcOut;
     }
-    else if (auto sink = journal_.debug();
-             sink && (sendq_size % Tuning::sendQueueLogFreq) == 0)
+    else
     {
-        std::string const n = name();
-        sink << (n.empty() ? remote_address_.to_string() : n)
-             << " sendq: " << sendq_size;
+        auto validator = m->getValidatorKey();
+        if (validator && !squelch_.expireSquelch(*validator))
+            return;
+
+        overlay_.reportTraffic(
+            safe_cast<TrafficCount::category>(m->getCategory()),
+            false,
+            static_cast<int>(m->getBuffer(compressionEnabled_).size()));
+        auto sendq_size = send_queue_.size();
+
+        if (sendq_size < Tuning::targetSendQueue)
+        {
+            // To detect a peer that does not read from their
+            // side of the connection, we expect a peer to have
+            // a small senq periodically
+            large_sendq_ = 0;
+        }
+        else if (auto sink = journal_.debug();
+                 sink && (sendq_size % Tuning::sendQueueLogFreq) == 0)
+        {
+            std::string const n = name();
+            sink << (n.empty() ? remote_address_.to_string() : n)
+                 << " sendq: " << sendq_size;
+        }
+
+        send_queue_.push(m);
+
+        if (sendq_size != 0)
+            return;
+
+
+    //void async_write(AsyncWriteStream & s, const ConstBufferSequence & buffers, WriteHandler handler);
+    //The handler to be called when the write operation completes. Copies will be made of the handler as required
+        boost::asio::async_write(
+            stream_, //assync write stream
+            boost::asio::buffer(   //writing buffer
+                send_queue_.front()->getBuffer(compressionEnabled_)),
+            bind_executor( //handler
+                strand_,
+                std::bind(
+                    &PeerImp::onWriteMessage,
+                    shared_from_this(),
+                    std::placeholders::_1,
+                    std::placeholders::_2)));
     }
-
-    send_queue_.push(m);
-
-    if (sendq_size != 0)
-        return;
-
-    target_str = "localhost:50051";
-    GreeterClient greeter(grpc::CreateChannel(target_str, grpc::InsecureChannelCredentials()));
-    std::string user("world");
-    std::string reply = greeter.SayHello(user);
-    std::cout << "Greeter received: " << reply << std::endl;
-
-
-    /*********** MODIFICATION GOES HERE ***************/
-    //Instead of sending via boost, send via grpc
-    boost::asio::async_write(
-        stream_,
-        boost::asio::buffer(
-            send_queue_.front()->getBuffer(compressionEnabled_)),
-        bind_executor(
-            strand_,
-            std::bind(
-                &PeerImp::onWriteMessage,
-                shared_from_this(),
-                std::placeholders::_1,
-                std::placeholders::_2)));
 }
 
 void
@@ -664,6 +659,7 @@ PeerImp::getPeerShardInfo() const
 void
 PeerImp::gracefulClose()
 {
+    JLOG(journal_.info()) << "RYCB enter graceful close";
     assert(strand_.running_in_this_thread());
     assert(socket_.is_open());
     assert(!gracefulClose_);
@@ -839,6 +835,8 @@ PeerImp::doAccept()
         protocol_,
         app_);
 
+    //RYCB
+    //Not sending protocol messages here
     // Write the whole buffer and only start protocol when that's done.
     boost::asio::async_write(
         stream_,
@@ -880,6 +878,7 @@ PeerImp::domain() const
 void
 PeerImp::doProtocolStart()
 {
+
     onReadMessage(error_code(), 0);
 
     // Send all the validator lists that have been loaded
@@ -919,10 +918,18 @@ PeerImp::doProtocolStart()
     setTimer();
 }
 
+    // void dump_buffer(std::ostream& os, multi_buffer const& mb) 
+    // {
+    //     os << mb.size() << " (" << mb.capacity() << ") "
+    //        << "'" << boost::beast::buffers(mb.data()) << "'\n";
+    // }
+
+
 // Called repeatedly with protocol message data
 void
 PeerImp::onReadMessage(error_code ec, std::size_t bytes_transferred)
 {
+
     if (!socket_.is_open())
         return;
     if (ec == boost::asio::error::operation_aborted)
@@ -945,9 +952,9 @@ PeerImp::onReadMessage(error_code ec, std::size_t bytes_transferred)
     metrics_.recv.add_message(bytes_transferred);
 
     read_buffer_.commit(bytes_transferred);
+    // dump_buffer(std::cout << "after: ", read_buffer_);
 
     auto hint = Tuning::readBufferBytes;
-
     while (read_buffer_.size() > 0)
     {
         std::size_t bytes_consumed;
@@ -993,10 +1000,14 @@ PeerImp::onWriteMessage(error_code ec, std::size_t bytes_transferred)
             stream << "onWriteMessage";
     }
 
-    metrics_.sent.add_message(bytes_transferred);
+    metrics_.sent.add_message(bytes_transferred); 
 
+    //RYCB
+    //what is the protocol sending here?
+    //as it seems it just sends the queue
+    //but dont add anything to the queue
     assert(!send_queue_.empty());
-    send_queue_.pop();
+    send_queue_.pop(); 
     if (!send_queue_.empty())
     {
         // Timeout on writes only

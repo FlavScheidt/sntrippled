@@ -496,6 +496,13 @@ OverlayImpl::checkStopped()
 void
 OverlayImpl::onPrepare()
 {
+
+    //RYCB
+    //Put the connection to the node.js gRPC libp2p module here
+    //Seems to be a good place
+    std::string target_str;
+    
+
     PeerFinder::Config config = PeerFinder::Config::makeConfig(
         app_.config(),
         serverHandler_.setup().overlay.port,

@@ -42,6 +42,7 @@ Builds/levelization/results/rawincludes.txt
 Builds/levelization/results/paths.txt
 Builds/levelization/results/includes/
 Builds/levelization/results/includedby/
+Builds/CMake/RippledCore.cmake
 
 # Ignore tmp directory.
 tmp
@@ -104,3 +105,8 @@ Builds/VisualStudio2015/*.sdf
 CMakeSettings.json
 compile_commands.json
 .clangd
+
+# RYCB My files
+grpc/node_modules/
+my_build/
+grpc/log*
