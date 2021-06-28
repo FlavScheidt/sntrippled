@@ -268,7 +268,6 @@ template <
 std::shared_ptr<T>
 parseMessageContent(MessageHeader const& header, Buffers const& buffers)
 {
-    std::cout << pthread_self()  << "|" << "Enter parse message content" << std::endl;
     auto const m = std::make_shared<T>();
 
     ZeroCopyInputStream<Buffers> stream(buffers);
@@ -304,7 +303,6 @@ template <
 bool
 invoke(MessageHeader const& header, Buffers const& buffers, Handler& handler)
 {
-    std::cout << pthread_self()  << "|" << "Enter invoke" << std::endl;
     auto const m = parseMessageContent<T>(header, buffers);
     if (!m)
         return false;
@@ -354,7 +352,7 @@ invokeProtocolMessage(
         return result;
 
     auto header = detail::parseMessageHeader(result.second, buffers, size);
-    std::cout  << pthread_self()  << "|"  << pthread_self() << " parsed header" << std::endl;
+    std::cout  << pthread_self()  << "|" << " parsed header" << std::endl;
 
     // If we can't parse the header then it may be that we don't have enough
     // bytes yet, or because the message was cut off (if error_code is success).
@@ -505,10 +503,7 @@ invokeProtocolMessage(
     result.first = header->total_wire_size;
 
     if (!success)
-    {
-        std::cout << pthread_self()  << "|"  << "Deu ruim" << std::endl;
         result.second = make_error_code(boost::system::errc::bad_message);
-    }
 
     return result;
 }

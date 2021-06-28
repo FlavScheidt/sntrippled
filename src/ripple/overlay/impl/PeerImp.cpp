@@ -209,7 +209,7 @@ PeerImp::run()
     //Start the gRPC client
     grpcOut = new GossipMessageClient(grpc::CreateChannel("localhost:50051",
                           grpc::InsecureChannelCredentials()), journal_);
-    JLOG(journal_.debug()) << "gRPC outbound channel open\n";
+    JLOG(journal_.debug()) << "gRPC outbound channel open";
 
     //Start gRPC Gossip sub server
     void * thisObject = this;
@@ -217,7 +217,7 @@ PeerImp::run()
 
     if (pthread_mutex_init(&gRPClock, NULL) != 0)
     {
-        JLOG(journal_.debug()) << "Failed to initiate mutex for the gRPC server\n";
+        JLOG(journal_.debug()) << "Failed to initiate mutex for the gRPC server";
     }
 
     pthread_create(&gRPCthread,&gRPCthreadAttr,gossipServer::Run,&tArgs);
@@ -659,6 +659,7 @@ PeerImp::getPeerShardInfo() const
 void
 PeerImp::gracefulClose()
 {
+    JLOG(journal_.info()) << "RYCB enter graceful close";
     assert(strand_.running_in_this_thread());
     assert(socket_.is_open());
     assert(!gracefulClose_);

@@ -24,8 +24,6 @@ namespace gossipServer
         
         beast::Journal journal = static_cast<beast::Journal>(args->journal);
         // ripple::PeerImp *peerObject = static_cast<ripple::PeerImp *>(upperObject);
-        std::cout << "Initiate journal" << std::endl;
-
         gossipServer::GossipMessageImpl *grpcIn;
 
         pthread_mutex_lock(&gRPClock);
@@ -35,8 +33,6 @@ namespace gossipServer
         {
             pthread_mutex_unlock(&gRPClock);
             JLOG(journal.debug()) << "Thread number " << pthread_self() <<  " initiating gRPC server";
-            std::cout << "Thread number " << pthread_self() <<  " initiating gRPC server" << std::endl;
-
             grpcIn->ConnectAndRun(args->upperObject);
         }
         else
@@ -44,8 +40,6 @@ namespace gossipServer
             pthread_mutex_unlock(&gRPClock);
             JLOG(journal.debug()) << "Thread number " << pthread_self() <<  " trying to initiate new gRPC server. Server won't be started for safety. Destroying object alocated";
             // delete grpcIn;
-
-            std::cout << "Thread number " << pthread_self() <<  " trying to initiate new gRPC server. Server won't be started for safety" << std::endl;
         }
 
     }
@@ -110,7 +104,6 @@ namespace gossipServer
         cq_ = builder.AddCompletionQueue();
         // Finally assemble the server.
         server_ = builder.BuildAndStart();
-        // std::cout << "gRPC Server listening on " << server_a
         JLOG(journal_.debug()) << "gRPC server listening on port " << gRPCport;
         // Proceed to the server's main loop.
         HandleRpcs(upperObject);
@@ -133,7 +126,7 @@ namespace gossipServer
     GossipMessageImpl::CallData::Proceed(void * upperObject) 
     {
         std::size_t bytes_transferred;
-        std::error_code ec;
+        boost::system::error_code ec;
         std::size_t bytes_consumed;
 
         if (status_ == CREATE) 
@@ -150,16 +143,13 @@ namespace gossipServer
         } 
         else if (status_ == PROCESS) 
         {
+
+            ripple::PeerImp *peerObject = static_cast<ripple::PeerImp *>(upperObject);
             // Spawn a new CallData instance to serve new clients while we process
             // the one for this CallData. The instance will deallocate itself as
             // part of its FINISH state.
             new CallData(service_, cq_, upperObject, journal_);
             // // The actual processing.
-            // JLOG(journal_.debug()) << "gRPC message received"; 
-            //the message processing goes here
-            // std::cout << "------------------------------------" << std::endl;
-            // std::cout << gossip.message() << std::endl;
-            // std::cout << "------------------------------------" << std::endl;
  
             //RYCB
             //Invocking the protocol to treat the message
@@ -168,25 +158,14 @@ namespace gossipServer
             // inside the buffer, make the same treatment we have on onReadMessage
             // and invoke invokeProtocolMessage(). Then I just need to pray.
 
-            std::cout << "Message received: " << gossip.message() << std::endl;
-
             //Here is the copy
             bytes_transferred = boost::asio::buffer_copy(read_buffer_grpc.prepare(gossip.message().size()), boost::asio::buffer(gossip.message()));
             read_buffer_grpc.commit(bytes_transferred);
 
 
             //Print on the standard output
-            dump_buffer(std::cout << "MESSAGE RYCB: ", read_buffer_grpc);
+            dump_buffer(std::cout << "Message received: ", read_buffer_grpc);
             
-            //Print on the log
-            // if (auto stream = journal_.trace())
-            // {   
-            //     if (bytes_transferred > 0)
-            //         stream << "onReadGRPCMessage: " << bytes_transferred << " bytes";
-            // // JLOG(journal_.debug()) << "onReadGRPCMessage: " << bytes_transferred << " bytes";
-            //     else
-            //         stream << "onReadGRPCMessage";
-            // }
 
             //Prepare the buffer to be read
             read_buffer_grpc.commit(bytes_transferred);
@@ -194,14 +173,16 @@ namespace gossipServer
             //Hin is zero just because today is tuesday
             //peerObject is the handler
             std::size_t  hint = 0;
-            ripple::PeerImp *peerObject = static_cast<ripple::PeerImp *>(upperObject);
-
 
             //Read and process buffer, unless there is an error on invokeProtoclMessage
             while (read_buffer_grpc.size() > 0)
             {
                 std::tie(bytes_consumed, ec) =
                     ripple::invokeProtocolMessage(read_buffer_grpc.data(), *peerObject, hint);
+                if (ec)
+                {
+                    JLOG(journal_.warn()) << "ERROR on receiving gRPC message " << ec.message();
+                }
                 if (bytes_consumed == 0)
                     break;
                 read_buffer_grpc.consume(bytes_consumed);
@@ -235,7 +216,6 @@ namespace gossipServer
     void 
     GossipMessageImpl::HandleRpcs(void * upperObject) 
     {
-        std::cout << "Handle rpcs" <<std::endl;
         // Spawn a new CallData instance to serve new clients.
         new GossipMessageImpl::CallData(&service_, cq_.get(), upperObject, journal_);
         void* tag;  // uniquely identifies a request.
