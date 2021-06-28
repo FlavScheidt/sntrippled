@@ -109,6 +109,4 @@ compile_commands.json
 # RYCB My files
 grpc/node_modules/
 my_build/
-Builds/CMake/RippledCore.cmake
-grpc/package-lock.json
-grpc/package.json
+grpc/log*
