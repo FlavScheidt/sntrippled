@@ -65,6 +65,10 @@ protected:
     }
 
 public:
+    //RYCB
+    //Translation table for the peers (used on grpc)
+    std::unordered_map<std::string, std::string> peerObjs;
+
     enum class Promote { automatic, never, always };
 
     struct Setup

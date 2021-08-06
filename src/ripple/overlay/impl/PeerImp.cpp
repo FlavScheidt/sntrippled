@@ -1,4 +1,4 @@
-//------------------------------------------------------------------------------
+﻿//------------------------------------------------------------------------------
 /*
     This file is part of rippled: https://github.com/ripple/rippled
     Copyright (c) 2012, 2013 Ripple Labs Inc.
@@ -130,6 +130,72 @@ PeerImp::PeerImp(
                            << " " << id_;
 }
 
+// //RYCB
+// // New constructor for dummy peer
+// PeerImp::PeerImp(
+//     Application& app,
+//     id_t id,
+//     std::shared_ptr<PeerFinder::Slot> const& slot,
+// //    http_request_type&& request,
+// //    PublicKey const& publicKey,
+// //    ProtocolVersion protocol,
+// //    Resource::Consumer consumer,
+// //    std::unique_ptr<stream_type>&& stream_ptr,
+//     OverlayImpl& overlay)
+//     : Child(overlay)
+//     , app_(app)
+//     , id_(id)
+//     , sink_(app_.journal("Peer"), makePrefix(id))
+//     , p_sink_(app_.journal("Protocol"), makePrefix(id))
+//     , journal_(sink_)
+//     , p_journal_(p_sink_)
+// //    , stream_ptr_(std::move(stream_ptr))
+// //    , socket_(stream_ptr_->next_layer().socket())
+// //    , stream_(*stream_ptr_)
+// //    , strand_(socket_.get_executor())
+// //    , timer_(waitable_timer{socket_.get_executor()})
+//     , remote_address_(slot->remote_endpoint())
+//     , overlay_(overlay)
+//     , inbound_(true)
+// //    , protocol_(protocol)
+//     , tracking_(Tracking::unknown)
+//     , trackingTime_(clock_type::now())
+// //    , publicKey_(publicKey)
+//     , lastPingTime_(clock_type::now())
+//     , creationTime_(clock_type::now())
+// //    , squelch_(app_.journal("Squelch"))
+// //    , usage_(consumer)
+//     // , fee_(Resource::feeLightPeer)
+//     , slot_(slot))
+// //    , request_(std::move(request))
+// //    , headers_(request_)
+//     // , compressionEnabled_(
+//     //       peerFeatureEnabled(
+//     //           headers_,
+//     //           FEATURE_COMPR,
+//     //           "lz4",
+//     //           app_.config().COMPRESSION)
+//     //           ? Compressed::On
+//     //           : Compressed::Off)
+//     // , vpReduceRelayEnabled_(peerFeatureEnabled(
+//     //       headers_,
+//     //       FEATURE_VPRR,
+//     //       app_.config().VP_REDUCE_RELAY_ENABLE))
+//     // , ledgerReplayEnabled_(peerFeatureEnabled(
+//     //       headers_,
+//     //       FEATURE_LEDGER_REPLAY,
+//     //       app_.config().LEDGER_REPLAY))
+//     // , ledgerReplayMsgHandler_(app, app.getLedgerReplayer())
+// {
+//    JLOG(journal_.debug()) << "Dummy peer created";
+//     // << " compression enabled "
+// //                           << (compressionEnabled_ == Compressed::On)
+// //                           << " vp reduce-relay enabled "
+// //                           << vpReduceRelayEnabled_ << " on " << remote_address_
+// //                           << " " << id_;
+// }
+
+
 PeerImp::~PeerImp()
 {
     const bool inCluster{cluster()};
@@ -212,16 +278,16 @@ PeerImp::run()
     JLOG(journal_.debug()) << "gRPC outbound channel open";
 
     //Start gRPC Gossip sub server
-    void * thisObject = this;
-    gossipServer::runArguments tArgs = {thisObject, journal_};
+   void * thisObject = this;
+   gossipServer::runArguments tArgs = {thisObject, journal_};
 
-    if (pthread_mutex_init(&gRPClock, NULL) != 0)
-    {
-        JLOG(journal_.debug()) << "Failed to initiate mutex for the gRPC server";
-    }
+   if (pthread_mutex_init(&gRPClock, NULL) != 0)
+   {
+       JLOG(journal_.debug()) << "Failed to initiate mutex for the gRPC server";
+   }
 
-    pthread_create(&gRPCthread,&gRPCthreadAttr,gossipServer::Run,&tArgs);
-    JLOG(journal_.debug()) << "gRPC inbound channel open\n";
+   pthread_create(&gRPCthread,&gRPCthreadAttr,gossipServer::Run,&tArgs);
+   JLOG(journal_.debug()) << "gRPC inbound channel open\n";
 
     if (inbound_)
         doAccept();
@@ -231,6 +297,89 @@ PeerImp::run()
     // Anything else that needs to be done with the connection should be
     // done in doProtocolStart
 }
+
+
+//RYCB
+//Create a new run method for the dummy peer, without the handshake verification
+// void
+// PeerImp::runDummy()
+// {
+//     pthread_t gRPCthread;
+//     pthread_attr_t gRPCthreadAttr;
+//     pthread_attr_init(&gRPCthreadAttr);
+
+//     if (!strand_.running_in_this_thread())
+//         return post(strand_, std::bind(&PeerImp::runDummy, shared_from_this()));
+
+//     auto parseLedgerHash =
+//         [](std::string const& value) -> boost::optional<uint256> {
+//         if (uint256 ret; ret.parseHex(value))
+//             return ret;
+
+//         if (auto const s = base64_decode(value); s.size() == uint256::size())
+//             return uint256{s};
+
+//         return boost::none;
+//     };
+
+// //    boost::optional<uint256> closed;
+// //    boost::optional<uint256> previous;
+
+// //    if (auto const iter = headers_.find("Closed-Ledger");
+// //        iter != headers_.end())
+// //    {
+// //        closed = parseLedgerHash(iter->value().to_string());
+
+// //        if (!closed)
+// //            fail("Malformed handshake data (1)");
+// //    }
+
+// //    if (auto const iter = headers_.find("Previous-Ledger");
+// //        iter != headers_.end())
+// //    {
+// //        previous = parseLedgerHash(iter->value().to_string());
+
+// //        if (!previous)
+// //            fail("Malformed handshake data (2)");
+// //    }
+
+// //    if (previous && !closed)
+// //        fail("Malformed handshake data (3)");
+
+// //    {
+// //        std::lock_guard<std::mutex> sl(recentLock_);
+// //        if (closed)
+// //            closedLedgerHash_ = *closed;
+// //        if (previous)
+// //            previousLedgerHash_ = *previous;
+// //    }
+
+//     //RYCB
+//     //Start the gRPC client
+//     grpcOut = new GossipMessageClient(grpc::CreateChannel("localhost:50051",
+//                           grpc::InsecureChannelCredentials()), journal_);
+//     JLOG(journal_.debug()) << "gRPC outbound channel open";
+
+//     //Start gRPC Gossip sub server
+//     void * thisObject = this;
+//     gossipServer::runArguments tArgs = {thisObject, journal_};
+
+//     if (pthread_mutex_init(&gRPClock, NULL) != 0)
+//     {
+//         JLOG(journal_.debug()) << "Failed to initiate mutex for the gRPC server";
+//     }
+
+//     pthread_create(&gRPCthread,&gRPCthreadAttr,gossipServer::Run,&tArgs);
+//     JLOG(journal_.debug()) << "gRPC inbound channel open\n";
+
+// //    if (inbound_)
+// //        doAccept();
+// //    else
+// //        doProtocolStart();
+
+//     // Anything else that needs to be done with the connection should be
+//     // done in doProtocolStart
+// }
 
 void
 PeerImp::stop()
