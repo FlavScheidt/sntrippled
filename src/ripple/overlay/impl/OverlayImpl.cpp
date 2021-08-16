@@ -1,4 +1,4 @@
-﻿//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 /*
     This file is part of rippled: https://github.com/ripple/rippled
     Copyright (c) 2012, 2013 Ripple Labs Inc.
@@ -314,13 +314,18 @@ OverlayImpl::onHandoff(
             list_.emplace(peer.get(), peer);
 
             peer->run();
-
-            //RYCB
-            //Add to the translation table
-            //peer must already be a pointer, since the operator used above
-            //to access the method is a -> (or maybe im getting confused)
-            peerObjs[publicKey] = peer;
         }
+
+        std::cout << "RYCB After peer created " << std::endl;
+        
+        //RYCB
+        //Add to the translation table
+        //The index of the translation table is the publicKey base58 (string)
+        std::string ephemeral_key = ripple::toBase58(ripple::TokenType::NodePublic, publicKey);
+        peerObjs[ephemeral_key] = peer;
+
+        std::cout << "RYCB PEER INSERTED ON THE LIST" << std::endl;
+
         handoff.moved = true;
         return handoff;
     }
@@ -502,6 +507,10 @@ OverlayImpl::checkStopped()
 void
 OverlayImpl::onPrepare()
 {
+
+    //RYCB
+    //Put the connection to the node.js gRPC libp2p module here
+    //Seems to be a good place
     std::string target_str;
     
 
@@ -580,55 +589,11 @@ OverlayImpl::onPrepare()
 void
 OverlayImpl::onStart()
 {
-
-  //RYCB
-  //Launch nnew thread to create a dummy peer
-  //Dummy peer will launch and manage the gRPC server
-
-  //Create new peer
-//   auto const id = next_id_++;
-//   beast::WrappedSink sink(app_.logs()["Peer"], makePrefix(id));
-//   beast::Journal journal(sink);
-
-//   // auto const slot = m_peerFinder->new_inbound_slot(
-//   //     beast::IPAddressConversion::from_asio(local_endpoint),
-//   //     beast::IPAddressConversion::from_asio(remote_endpoint));
-
-
-//   auto const peer = std::make_shared<PeerImp>(
-//       app_,
-//       id,
-//       slot,
-// //      std::move(request),
-// //      publicKey,
-// //      *negotiatedVersion,
-// //      consumer,
-// //      std::move(stream_ptr),
-//       *this);
-//   {
-//       // As we are not on the strand, run() must be called
-//       // while holding the lock, otherwise new I/O can be
-//       // queued after a call to stop().
-//       std::lock_guard<decltype(mutex_)> lock(mutex_);
-//       {
-//           auto const result = m_peers.emplace(peer->slot(), peer);
-//           assert(result.second);
-//           (void)result.second;
-//       }
-//       list_.emplace(peer.get(), peer);
-//       //Run peer as dummy
-//       //The thread is launched inside this function
-//       peer->runDummy();
-//   }
-
-  //End of RYCB modification
-
     auto const timer = std::make_shared<Timer>(*this);
     std::lock_guard lock(mutex_);
     list_.emplace(timer.get(), timer);
     timer_ = timer;
     timer->run();
-
 }
 
 void

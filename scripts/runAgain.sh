@@ -21,10 +21,10 @@ mv debug.log "debug_${LOG_DATE}_${LOG_HOUR}_${LOG_MIN}_${LOG_SEC}.log"
 # STEP 2
 #	Rename DB
 ###########################
-# cd /var/lib/rippled/
+cd /var/lib/rippled/
 
-# mkdir "db_${LOG_DATE}_${LOG_HOUR}_${LOG_MIN}_${LOG_SEC}"
-# mv db/* "db_${LOG_DATE}_${LOG_HOUR}_${LOG_MIN}_${LOG_SEC}/"
+mkdir "db_${LOG_DATE}_${LOG_HOUR}_${LOG_MIN}_${LOG_SEC}"
+mv db/* "db_${LOG_DATE}_${LOG_HOUR}_${LOG_MIN}_${LOG_SEC}/"
 
 
 ###########################

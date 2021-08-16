@@ -57,6 +57,11 @@ class BasicConfig;
 class OverlayImpl : public Overlay, public reduce_relay::SquelchHandler
 {
 public:
+
+    //RYCB
+    //Translation table for the peers (used on grpc)
+    std::unordered_map<std::string, std::shared_ptr<ripple::PeerImp>> peerObjs;
+
     class Child
     {
     protected:

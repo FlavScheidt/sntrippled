@@ -1,4 +1,4 @@
-﻿//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 /*
     This file is part of rippled: https://github.com/ripple/rippled
     Copyright (c) 2012, 2013 Ripple Labs Inc.
@@ -258,19 +258,6 @@ public:
         std::unique_ptr<stream_type>&& stream_ptr,
         OverlayImpl& overlay);
 
-    //RYCB
-    // New constructor for dummy peer
-    PeerImp(
-        Application& app,
-        id_t id,
-        std::shared_ptr<PeerFinder::Slot> const& slot,
-    //    http_request_type&& request,
-    //    PublicKey const& publicKey,
-    //    ProtocolVersion protocol,
-    //    Resource::Consumer consumer,
-    //    std::unique_ptr<stream_type>&& stream_ptr,
-        OverlayImpl& overlay);
-
     /** Create outgoing, handshaked peer. */
     // VFALCO legacyPublicKey should be implied by the Slot
     template <class Buffers>
@@ -303,9 +290,6 @@ public:
     // Work-around for calling shared_from_this in constructors
     void
     run();
-
-    void
-    runDummy();
 
     // Called when Overlay gets a stop request.
     void

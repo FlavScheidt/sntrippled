@@ -23,7 +23,7 @@ namespace gossipServer
         gossipServer::runArguments *args = static_cast<gossipServer::runArguments *>(tArguments);
         
         beast::Journal journal = static_cast<beast::Journal>(args->journal);
-        // ripple::PeerImp *peerObject = static_cast<ripple::PeerImp *>(upperObject);
+        // ripple::PeerImp *peerObject = static_cast<ripple::PeerImp *>(overlay);
         gossipServer::GossipMessageImpl *grpcIn;
 
         pthread_mutex_lock(&gRPClock);
@@ -33,7 +33,7 @@ namespace gossipServer
         {
             pthread_mutex_unlock(&gRPClock);
             JLOG(journal.debug()) << "Thread number " << pthread_self() <<  " initiating gRPC server";
-            grpcIn->ConnectAndRun(args->upperObject);
+            grpcIn->ConnectAndRun(args->overlay);
         }
         else
         {
@@ -90,7 +90,7 @@ namespace gossipServer
 
 
     void
-    GossipMessageImpl::ConnectAndRun(void * upperObject)
+    GossipMessageImpl::ConnectAndRun(void *  overlay)
     {
         std::string server_address(gRPCport);
         ServerBuilder builder;
@@ -106,7 +106,7 @@ namespace gossipServer
         server_ = builder.BuildAndStart();
         JLOG(journal_.debug()) << "gRPC server listening on port " << gRPCport;
         // Proceed to the server's main loop.
-        HandleRpcs(upperObject);
+        HandleRpcs(overlay);
 
         pthread_exit(0);
     }
@@ -114,16 +114,16 @@ namespace gossipServer
     // Take in the "service" instance (in this case representing an asynchronous
     // server) and the completion queue "cq" used for asynchronous communication
     // with the gRPC runtime.
-    GossipMessageImpl::CallData::CallData(GossipMessage::AsyncService* service, ServerCompletionQueue* cq, void * upperObject, beast::Journal journal)
+    GossipMessageImpl::CallData::CallData(GossipMessage::AsyncService* service, ServerCompletionQueue* cq, void *  overlay, beast::Journal journal)
         : service_(service), cq_(cq), responder_(&ctx_), status_(CREATE), journal_(journal)
     {
         // Invoke the serving logic right away.
-        GossipMessageImpl::CallData::Proceed(upperObject);
+        GossipMessageImpl::CallData::Proceed(overlay);
     }
 
 
     void 
-    GossipMessageImpl::CallData::Proceed(void * upperObject) 
+    GossipMessageImpl::CallData::Proceed(void *  overlay) 
     {
         std::size_t bytes_transferred;
         boost::system::error_code ec;
@@ -143,12 +143,10 @@ namespace gossipServer
         } 
         else if (status_ == PROCESS) 
         {
-
-            ripple::PeerImp *peerObject = static_cast<ripple::PeerImp *>(upperObject);
             // Spawn a new CallData instance to serve new clients while we process
             // the one for this CallData. The instance will deallocate itself as
             // part of its FINISH state.
-            new CallData(service_, cq_, upperObject, journal_);
+            new CallData(service_, cq_, overlay, journal_);
             // // The actual processing.
  
             //RYCB
@@ -173,6 +171,15 @@ namespace gossipServer
             //Hin is zero just because today is tuesday
             //peerObject is the handler
             std::size_t  hint = 0;
+
+            //Get peerOjbect from the translation table on the overlay object
+            ripple::OverlayImpl *ovl = static_cast<ripple::OverlayImpl *>(overlay);
+            //Validator key is already received as base58 string.... no need to convert (thank God)
+            std::shared_ptr<ripple::PeerImp> peerObject = ovl->peerObjs[gossip.validator_key()];
+
+            auto peerID_rcv = peerObject->id();
+
+            std::cout << "RYCB Peer selected: " << peerID_rcv << std::endl;
 
             //Read and process buffer, unless there is an error on invokeProtoclMessage
             while (read_buffer_grpc.size() > 0)
@@ -214,10 +221,10 @@ namespace gossipServer
 
     // This can be run in multiple threads if needed.
     void 
-    GossipMessageImpl::HandleRpcs(void * upperObject) 
+    GossipMessageImpl::HandleRpcs(void *  overlay) 
     {
         // Spawn a new CallData instance to serve new clients.
-        new GossipMessageImpl::CallData(&service_, cq_.get(), upperObject, journal_);
+        new GossipMessageImpl::CallData(&service_, cq_.get(), overlay, journal_);
         void* tag;  // uniquely identifies a request.
         bool ok;
         while (true) 
@@ -229,7 +236,7 @@ namespace gossipServer
             // tells us whether there is any kind of event or cq_ is shutting down.
             GPR_ASSERT(cq_->Next(&tag, &ok));
             GPR_ASSERT(ok);
-            static_cast<GossipMessageImpl::CallData*>(tag)->GossipMessageImpl::CallData::Proceed(upperObject);
+            static_cast<GossipMessageImpl::CallData*>(tag)->GossipMessageImpl::CallData::Proceed(overlay);
         }
     }
 
