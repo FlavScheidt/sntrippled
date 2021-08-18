@@ -167,7 +167,7 @@ namespace gossipServer
             std::cout << "Copy done" << std::endl;
 
             //Print on the standard output
-            dump_buffer(std::cout << "Message received: ", read_buffer_grpc);
+            // dump_buffer(std::cout << "Message received: ", read_buffer_grpc);
             
 
             //Prepare the buffer to be read
