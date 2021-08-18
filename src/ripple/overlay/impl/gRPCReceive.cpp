@@ -129,6 +129,8 @@ namespace gossipServer
         boost::system::error_code ec;
         std::size_t bytes_consumed;
 
+        std::cout << "Call Data" << std::endl;
+
         if (status_ == CREATE) 
         {
             // Make this instance progress to the PROCESS state.
@@ -143,6 +145,7 @@ namespace gossipServer
         } 
         else if (status_ == PROCESS) 
         {
+            std::cout << "process" << std::endl;
             // Spawn a new CallData instance to serve new clients while we process
             // the one for this CallData. The instance will deallocate itself as
             // part of its FINISH state.

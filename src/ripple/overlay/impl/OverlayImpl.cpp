@@ -177,6 +177,9 @@ OverlayImpl::onHandoff(
     http_request_type&& request,
     endpoint_type remote_endpoint)
 {
+
+    // std::cout << "onHandoff" << std::endl;
+
     auto const id = next_id_++;
     beast::WrappedSink sink(app_.logs()["Peer"], makePrefix(id));
     beast::Journal journal(sink);
