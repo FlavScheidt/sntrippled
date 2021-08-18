@@ -85,8 +85,8 @@ namespace gossipClient
         else
             pkSend.assign("0");
         
-        std::cout << pthread_self()  << "|" << "  validator key sent "  << pkSend << std::endl;
-        std::cout << pthread_self() << "|" << " message sent " << _buffer << std::endl;
+        // std::cout << pthread_self()  << "|" << "  validator key sent "  << pkSend << std::endl;
+        // std::cout << pthread_self() << "|" << " message sent " << _buffer << std::endl;
 
         // std::string _test = "Hello World =)";
         gossip.set_message(_buffer);

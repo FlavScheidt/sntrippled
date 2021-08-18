@@ -158,6 +158,7 @@ namespace gossipServer
             // to call read_some. So I will just copy what's on gossip.message()
             // inside the buffer, make the same treatment we have on onReadMessage
             // and invoke invokeProtocolMessage(). Then I just need to pray.
+            std::cout << "Before copying" << std::endl;
 
             //Here is the copy
             bytes_transferred = boost::asio::buffer_copy(read_buffer_grpc.prepare(gossip.message().size()), boost::asio::buffer(gossip.message()));
