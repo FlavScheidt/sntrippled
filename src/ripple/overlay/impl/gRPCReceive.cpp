@@ -160,7 +160,7 @@ namespace gossipServer
             // and invoke invokeProtocolMessage(). Then I just need to pray.
                         //Print on the standard output
             std::cout << "Message received grpc buffer " << gossip.message() << std::endl;
-            std::cout << gossip.validator_key() << std::endl;
+            std::cout << "key" << gossip.validator_key() << std::endl;
 
             std::cout << "Before copying" << std::endl;
 
