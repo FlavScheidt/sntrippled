@@ -158,6 +158,9 @@ namespace gossipServer
             // to call read_some. So I will just copy what's on gossip.message()
             // inside the buffer, make the same treatment we have on onReadMessage
             // and invoke invokeProtocolMessage(). Then I just need to pray.
+                        //Print on the standard output
+            std::cout << "Message received grpc buffer " << gossip.message();
+            
             std::cout << "Before copying" << std::endl;
 
             //Here is the copy
@@ -165,8 +168,7 @@ namespace gossipServer
             read_buffer_grpc.commit(bytes_transferred);
 
             std::cout << "Copy done" << std::endl;
-
-            //Print on the standard output
+            
             // dump_buffer(std::cout << "Message received: ", read_buffer_grpc);
             
 

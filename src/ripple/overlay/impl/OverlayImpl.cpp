@@ -178,8 +178,6 @@ OverlayImpl::onHandoff(
     endpoint_type remote_endpoint)
 {
 
-    // std::cout << "onHandoff" << std::endl;
-
     auto const id = next_id_++;
     beast::WrappedSink sink(app_.logs()["Peer"], makePrefix(id));
     beast::Journal journal(sink);
@@ -327,7 +325,10 @@ OverlayImpl::onHandoff(
         std::string ephemeral_key = ripple::toBase58(ripple::TokenType::NodePublic, publicKey);
         peerObjs[ephemeral_key] = peer;
 
-        std::cout << "RYCB PEER INSERTED ON THE LIST" << std::endl;
+        auto peerIDtest = peerObjs[ephemeral_key]->id();
+
+        std::cout << "RYCB PEER INSERTED ON THE LIST " << peerIDtest << std::endl;
+        std::cout << ephemeral_key << std::cout;
 
         handoff.moved = true;
         return handoff;
