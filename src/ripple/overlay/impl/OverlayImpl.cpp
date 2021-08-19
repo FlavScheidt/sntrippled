@@ -328,7 +328,7 @@ OverlayImpl::onHandoff(
         auto peerIDtest = peerObjs[ephemeral_key]->id();
 
         std::cout << "RYCB PEER INSERTED ON THE LIST " << peerIDtest << std::endl;
-        std::cout << ephemeral_key << std::cout;
+        std::cout << ephemeral_key << std::endl;
 
         handoff.moved = true;
         return handoff;

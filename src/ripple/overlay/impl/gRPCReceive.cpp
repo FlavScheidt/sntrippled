@@ -159,8 +159,9 @@ namespace gossipServer
             // inside the buffer, make the same treatment we have on onReadMessage
             // and invoke invokeProtocolMessage(). Then I just need to pray.
                         //Print on the standard output
-            std::cout << "Message received grpc buffer " << gossip.message();
-            
+            std::cout << "Message received grpc buffer " << gossip.message() << std::endl;
+            std::cout << gossip.validator_key() << std::endl;
+
             std::cout << "Before copying" << std::endl;
 
             //Here is the copy
