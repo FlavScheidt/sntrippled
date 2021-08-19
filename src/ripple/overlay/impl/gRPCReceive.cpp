@@ -170,7 +170,7 @@ namespace gossipServer
 
             std::cout << "Copy done" << std::endl;
             
-            // dump_buffer(std::cout << "Message received: ", read_buffer_grpc);
+            dump_buffer(std::cout << "Message received: ", read_buffer_grpc);
             
 
             //Prepare the buffer to be read
@@ -182,7 +182,12 @@ namespace gossipServer
 
             //Get peerOjbect from the translation table on the overlay object
             ripple::OverlayImpl *ovl = static_cast<ripple::OverlayImpl *>(overlay);
-            //Validator key is already received as base58 string.... no need to convert (thank God)
+
+            //Get the validator key from the message itself
+            auto validator_key = gossip.validator_key();
+
+            std::cout << "Got index " << validator_key << std::endl;
+
             std::shared_ptr<ripple::PeerImp> peerObject = ovl->peerObjs[gossip.validator_key()];
 
             auto peerID_rcv = peerObject->id();
