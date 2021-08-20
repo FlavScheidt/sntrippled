@@ -99,6 +99,18 @@ var argv = parseArgs(process.argv.slice(2), {
   } else {
     target = 'localhost:20052';
   }
+
+//Flaviene: Executes a bash script to retrieve the ephemeral/public key from the validator
+//          Because we need to sign the validations that comes with the validator_key = 0.
+//          Those are the validations originated from this validator, and only those will
+//          be published on gossipsub.
+
+const { execSync } = require("child_process");
+bash_command = '/root/sntrippled/my_build/rippled validator_info --conf /opt/local/etc/rippled.cfg | cat | grep "ephemeral_key" | cut -d ":" -f2 | cut -d "\\"" -f2'
+var ValidatorKey = execSync(bash_command);
+ValidatorKey = ValidatorKey.toString('utf8').replace( /[\r\n]+/gm, "" );
+
+
 //var client = new gossip_proto.GossipMessage(target, grpc.credentials.createInsecure());
 var client = new gossip_message.GossipMessage(target, grpc.credentials.createInsecure());
 console.log(Date.now(), ' | gRPC | Chanel created');
@@ -112,6 +124,7 @@ const gosssib = async() => {
     console.log("------------------------------------------------------------------")
     console.log("GRPC One Node for all ")
     console.log("ID:", node1.peerId._idB58String)
+    console.log("Public key:", ValidatorKey)
     console.log("------------------------------------------------------------------")
     node1.on('peer:discovery', (peer) => console.log(Date.now(), " | Discovered:", peer.id.toB58String()))
 
@@ -150,10 +163,11 @@ function toLibP2P(call, callback) {
     //console.log(Date.now(), " | gRPC | Msg Validation key(bs58): ", hexToBase58(call.request.validator_key))
     
     // Wazen: gossibsub publish
-    if(call.request.validator_key.toString()!="0")
+    if(call.request.validator_key.toString() == "0")
 	{ 
         //my_node.pubsub.publish(topic, call.request.message)
-        msg_to_brodcast = call.request.message   //JSON.stringify({msg:call.request.message.toString(), validator_key:call.request.validator_key.toString()})
+        // msg_to_brodcast = call.request.message   //JSON.stringify({msg:call.request.message.toString(), validator_key:call.request.validator_key.toString()})
+        msg_to_brodcast = JSON.stringify({msg:call.request.message.toString(), validator_key:validatorKey});
         my_node.pubsub.publish(topic,msg_to_brodcast) //publish the whole msg + validator key
         console.log("GRPC-Server: Put on Gossipsub: " + call.request.validator_key.toString())
 	}
@@ -163,11 +177,19 @@ function toLibP2P(call, callback) {
     });
 }
 
+
+
 /**
  * Starts a RPC server that receives requests for the toLibP2P service at the
  * sample server port
  */
 async function main() {
+
+    // var publicKey = getValidatorKey();
+    // console.log("------------------------------------------------------------------")
+    // console.log("Got the validator ephemeral key: ", publicKey)
+    // console.log("------------------------------------------------------------------")
+
     var server = new grpc.Server();
     server.addService(gossip_message.GossipMessage.service, { toLibP2P: toLibP2P });
     server.bindAsync('0.0.0.0:50051', grpc.ServerCredentials.createInsecure(), () => {
