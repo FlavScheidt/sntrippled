@@ -110,3 +110,4 @@ compile_commands.json
 grpc/node_modules/
 my_build/
 grpc/log*
+grpc/key.out

@@ -107,8 +107,8 @@ var argv = parseArgs(process.argv.slice(2), {
 
 const { execSync } = require("child_process");
 bash_command = '/root/sntrippled/my_build/rippled validator_info --conf /opt/local/etc/rippled.cfg | cat | grep "ephemeral_key" | cut -d ":" -f2 | cut -d "\\"" -f2'
-var ValidatorKey = execSync(bash_command);
-ValidatorKey = ValidatorKey.toString('utf8').replace( /[\r\n]+/gm, "" );
+var validatorKey = execSync(bash_command);
+validatorKey = validatorKey.toString('utf8').replace( /[\r\n]+/gm, "" );
 
 
 //var client = new gossip_proto.GossipMessage(target, grpc.credentials.createInsecure());
@@ -124,7 +124,7 @@ const gosssib = async() => {
     console.log("------------------------------------------------------------------")
     console.log("GRPC One Node for all ")
     console.log("ID:", node1.peerId._idB58String)
-    console.log("Public key:", ValidatorKey)
+    console.log("Public key:", validatorKey)
     console.log("------------------------------------------------------------------")
     node1.on('peer:discovery', (peer) => console.log(Date.now(), " | Discovered:", peer.id.toB58String()))
 
@@ -163,13 +163,13 @@ function toLibP2P(call, callback) {
     //console.log(Date.now(), " | gRPC | Msg Validation key(bs58): ", hexToBase58(call.request.validator_key))
     
     // Wazen: gossibsub publish
-    if(call.request.validator_key.toString() == "0")
+    if(call.request.validator_key.toString() == validatorKey)
 	{ 
         //my_node.pubsub.publish(topic, call.request.message)
-        // msg_to_brodcast = call.request.message   //JSON.stringify({msg:call.request.message.toString(), validator_key:call.request.validator_key.toString()})
-        msg_to_brodcast = JSON.stringify({msg:call.request.message, validator_key:ValidatorKey});
+        msg_to_brodcast = call.request.message   //JSON.stringify({msg:call.request.message.toString(), validator_key:call.request.validator_key.toString()})
+        // msg_to_brodcast = JSON.stringify({msg:call.request.message, validator_key:validatorKey});
         my_node.pubsub.publish(topic,msg_to_brodcast) //publish the whole msg + validator key
-        console.log("GRPC-Server: Put on Gossipsub: " + ValidatorKey)
+        console.log("GRPC-Server: Put on Gossipsub: " + validatorKey)
 	}
     console.log("___________________________________________")
     callback(null, {
@@ -185,7 +185,7 @@ function toLibP2P(call, callback) {
  */
 async function main() {
 
-    // var publicKey = getValidatorKey();
+    // var publicKey = getvalidatorKey();
     // console.log("------------------------------------------------------------------")
     // console.log("Got the validator ephemeral key: ", publicKey)
     // console.log("------------------------------------------------------------------")

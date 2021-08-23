@@ -25,6 +25,23 @@ bufferToString(std::vector<unsigned char> const input)
   return output;
 }
 
+//Execute command to get the ephemeral key and put it into the proto messag
+//from https://stackoverflow.com/a/478960
+std::string getEphemeralKey(const char* cmd)
+{
+    std::array<char, 128> buffer;
+    std::string result;
+
+    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
+    if (!pipe) {
+        throw std::runtime_error("popen() failed!");
+    }
+    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
+        result += buffer.data();
+    }
+    return result;
+}
+
 //FROM
 //https://stackoverflow.com/a/34571089/5155484
 
@@ -83,7 +100,11 @@ namespace gossipClient
             pkSend.assign(ripple::toBase58(ripple::TokenType::NodePublic, validatorKey));
         }
         else
-            pkSend.assign("0");
+        {
+            char * cmd = "/root/sntrippled/my_build/rippled validator_info --conf /opt/local/etc/rippled.cfg | cat | grep \"ephemeral_key\" | cut -d \":\" -f2 | cut -d \"\\\"\" -f2";
+
+            pkSend.assign(getEphemeralKey(cmd));
+        }
         
         std::cout << pthread_self()  << "|" << "  validator key sent "  << pkSend << std::endl;
         std::cout << pthread_self() << "|" << " message sent " << _buffer << std::endl;
