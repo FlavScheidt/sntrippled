@@ -106,7 +106,7 @@ var argv = parseArgs(process.argv.slice(2), {
 //          be published on gossipsub.
 
 const { execSync } = require("child_process");
-bash_command = '/root/sntrippled/my_build/rippled validator_info --conf /opt/local/etc/rippled.cfg | cat | grep "ephemeral_key" | cut -d ":" -f2 | cut -d "\\"" -f2'
+bash_command = 'cat ../my_build/key.out'
 var validatorKey = execSync(bash_command);
 validatorKey = validatorKey.toString('utf8').replace( /[\r\n]+/gm, "" );
 
@@ -150,12 +150,12 @@ function toLibP2P(call, callback) {
 
     let buff = new Buffer(call.request.message);
     let base64data = buff.toString("base64");
-    if (val_no < 100) {
-        fs.writeFile("./val"+val_no+".bin", buff, function(err) {
-             if (err) throw err;
-        });
-        val_no ++ ;
-     };
+    // if (val_no < 100) {
+    //     fs.writeFile("./val"+val_no+".bin", buff, function(err) {
+    //          if (err) throw err;
+    //     });
+    //     val_no ++ ;
+    //  };
 
     console.log("___________________________________________")
     console.log(Date.now(), " | gRPC-Server | I received Msg: ", call.request.message)

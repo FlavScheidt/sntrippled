@@ -171,6 +171,24 @@ OverlayImpl::~OverlayImpl()
 
 //------------------------------------------------------------------------------
 
+
+//Execute command to get the ephemeral key and put it into the proto messag
+//from https://stackoverflow.com/a/478960
+std::string execShell(const char* cmd)
+{
+    std::array<char, 128> buffer;
+    std::string result;
+
+    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
+    if (!pipe) {
+        throw std::runtime_error("popen() failed!");
+    }
+    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
+        result += buffer.data();
+    }
+    return result;
+}
+
 Handoff
 OverlayImpl::onHandoff(
     std::unique_ptr<stream_type>&& stream_ptr,
@@ -329,6 +347,9 @@ OverlayImpl::onHandoff(
 
         std::cout << "RYCB PEER INSERTED ON THE LIST " << peerIDtest << std::endl;
         std::cout << ephemeral_key << std::endl;
+
+        execShell("./rippled validator_info --conf /opt/local/etc/rippled.cfg | cat | grep \"ephemeral_key\" | cut -d \":\" -f2 | cut -d \"\\\"\" -f2 > key.out");
+
 
         handoff.moved = true;
         return handoff;
@@ -589,6 +610,8 @@ OverlayImpl::onPrepare()
             });
     }
 }
+
+
 
 void
 OverlayImpl::onStart()
