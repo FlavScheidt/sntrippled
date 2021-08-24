@@ -148,8 +148,8 @@ const gosssib = async() => {
 function toLibP2P(call, callback) {
     //my_node.pubsub.publish(topic, uint8ArrayFromString('' + call.request.name + ', Validation Tx'))
 
-    let buff = new Buffer(call.request.message);
-    let base64data = buff.toString("base64");
+    // let buff = new Buffer(call.request.message);
+    // let base64data = buff.toString("base64");
     // if (val_no < 100) {
     //     fs.writeFile("./val"+val_no+".bin", buff, function(err) {
     //          if (err) throw err;
@@ -163,14 +163,13 @@ function toLibP2P(call, callback) {
     //console.log(Date.now(), " | gRPC | Msg Validation key(bs58): ", hexToBase58(call.request.validator_key))
     
     // Wazen: gossibsub publish
-    console.log(call.request.validator_key.toString().replace( /[\r\n]+/gm, "" ))
     if(call.request.validator_key.toString().replace( /[\r\n]+/gm, "" ) == validatorKey)
 	{ 
         //my_node.pubsub.publish(topic, call.request.message)
-        msg_to_brodcast = call.request.message   //JSON.stringify({msg:call.request.message.toString(), validator_key:call.request.validator_key.toString()})
-        // msg_to_brodcast = JSON.stringify({msg:call.request.message, validator_key:validatorKey});
+        //msg_to_brodcast = call.request.message   //JSON.stringify({msg:call.request.message.toString(), validator_key:call.request.validator_key.toString()})
+         msg_to_brodcast = {message:call.request.message, validator_key:validatorKey};
         my_node.pubsub.publish(topic,msg_to_brodcast) //publish the whole msg + validator key
-        console.log("GRPC-Server: Put on Gossipsub: " + validatorKey)
+        console.log("GRPC-Server: Put on Gossipsub: " + msg_to_brodcast)
 	}
     console.log("___________________________________________")
     callback(null, {

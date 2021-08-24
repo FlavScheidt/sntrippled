@@ -10,6 +10,15 @@
 //RYCB Beat me up, I'm doing ugly stuff
 int gRPCportNum = 1;
 
+std::string
+bufferToString(std::vector<unsigned char> const input)
+{
+  std::string output;
+  for (char c: input)
+    output.push_back(c);
+
+  return output;
+}
 
 namespace gossipServer
 {
@@ -186,7 +195,7 @@ namespace gossipServer
             //Get the validator key from the message itself
             auto validator_key = gossip.validator_key();
 
-            std::cout << "Got index " << validator_key << std::endl;
+            std::cout << "Got index " << bufferToString(validator_key) << std::endl;
 
             std::shared_ptr<ripple::PeerImp> peerObject = ovl->peerObjs[gossip.validator_key()];
 

@@ -613,9 +613,6 @@ void
 OverlayImpl::onStart()
 {
     auto shellResult = execShell("./rippled server_info --conf /opt/local/etc/rippled.cfg | cat | grep \"pubkey_node\" | cut -d \":\" -f2 | cut -d \"\\\"\" -f2 > key.out");
-
-    std::cout << "Shell result " << shellResult << std::endl;
-
     auto const timer = std::make_shared<Timer>(*this);
     std::lock_guard lock(mutex_);
     list_.emplace(timer.get(), timer);
