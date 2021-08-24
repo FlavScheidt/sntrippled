@@ -136,7 +136,7 @@ const gosssib = async() => {
         var call = client.toRippled(send_to_rippled, function(err, stream) 
         {
           if (err) {
-            console.log("deu ruim")
+            callback(err)
           } else {
             console.log(Date.now(), ' | gRPC-Client | Message from GSub node ID: ' + validator_key + ' sent to rippled server and received with status '+stream);
           }
