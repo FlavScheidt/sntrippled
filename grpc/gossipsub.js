@@ -130,8 +130,8 @@ const gosssib = async() => {
 
     node1.pubsub.on(topic, (msg) => {
         try {
-            client.toRippled({message: msg.data, validator_key: msg.from}, function(err, response) {
-                console.log(Date.now(), ' | gRPC-Client | Message from GSub node ID: ' + msg.from.toString() + ' sent to rippled server');});
+            client.toRippled({message: msg.data.msg, validator_key: msg.data.validator_key}, function(err, response) {
+                console.log(Date.now(), ' | gRPC-Client | Message from GSub node ID: ' + msg.data.validator_key.toString() + ' sent to rippled server');});
         } catch (error) {
             
         }
@@ -166,10 +166,10 @@ function toLibP2P(call, callback) {
     if(call.request.validator_key.toString().replace( /[\r\n]+/gm, "" ) == validatorKey)
 	{ 
         //my_node.pubsub.publish(topic, call.request.message)
-        //msg_to_brodcast = call.request.message   //JSON.stringify({msg:call.request.message.toString(), validator_key:call.request.validator_key.toString()})
-         msg_to_brodcast = {message:call.request.message.toString(), validator_key:validatorKey.toString()};
+        msg_to_brodcast = JSON.stringify({msg:call.request.message.toString(), validator_key:call.request.validator_key.toString()})
+        // msg_to_brodcast = call.request.message;
         my_node.pubsub.publish(topic,msg_to_brodcast) //publish the whole msg + validator key
-        console.log("GRPC-Server: Put on Gossipsub: " + msg_to_brodcast.message + " " + msg_to_brodcast.validator_key)
+        console.log("GRPC-Server: Put on Gossipsub: " + msg_to_brodcast)
 	}
     console.log("___________________________________________")
     callback(null, {
