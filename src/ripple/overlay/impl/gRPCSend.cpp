@@ -101,8 +101,10 @@ namespace gossipClient
             pkSend.assign(ripple::toBase58(ripple::TokenType::NodePublic, validatorKey));
         }
         else
-
-            pkSend.assign(execShell("cat key.out"));
+        {
+            auto ephemeralKey = execShell("cat key.out");
+            pkSend.assign(ephemeralKey);
+        }
     
         
         std::cout << pthread_self()  << "|" << "  validator key sent "  << pkSend << std::endl;

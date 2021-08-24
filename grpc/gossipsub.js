@@ -89,7 +89,7 @@ const createNode = async() => {
 }
 
 let my_node;
-const topic = 'test-validations'
+const topic = 'test-flav-validations'
 var argv = parseArgs(process.argv.slice(2), {
     string: 'target'
   });
@@ -163,6 +163,7 @@ function toLibP2P(call, callback) {
     //console.log(Date.now(), " | gRPC | Msg Validation key(bs58): ", hexToBase58(call.request.validator_key))
     
     // Wazen: gossibsub publish
+    console.log(call.request.validator_key.toString())
     if(call.request.validator_key.toString() == validatorKey)
 	{ 
         //my_node.pubsub.publish(topic, call.request.message)
