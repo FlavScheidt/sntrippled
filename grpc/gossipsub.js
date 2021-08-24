@@ -129,8 +129,9 @@ const gosssib = async() => {
     node1.on('peer:discovery', (peer) => console.log(Date.now(), " | Discovered:", peer.id.toB58String()))
 
     node1.pubsub.on(topic, (msg) => {
+        message_received = JSON.parse(msg.data)
         try {
-            client.toRippled({message: JSON.parse(msg.data).msg, validator_key: JSON.parse(msg.data).validator_key}, function(err, response) {
+            client.toRippled({message: message_received.msg, validator_key: message_received.validator_key}, function(err, response) {
                 console.log(Date.now(), ' | gRPC-Client | Message from GSub node ID: ' + JSON.parse(msg.data).validator_key + ' sent to rippled server');});
         } catch (error) {
             
