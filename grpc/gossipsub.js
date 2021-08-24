@@ -132,12 +132,21 @@ const gosssib = async() => {
         message_received = JSON.parse(message.data);
         validator_key = message_received.validator_key.toString().replace( /[\r\n]+/gm, "" );
 
-        try {
-            client.toRippled({message: message.data, validator_key: validator_key}, function(err, response) {
-                console.log(Date.now(), ' | gRPC-Client | Message from GSub node ID: ' + validator_key + ' sent to rippled server');});
-        } catch (error) {
+        var send_to_rippled = {message: message_received.message, validator_key: validator_key}
+        var call = client.toRippled(send_to_rippled, function(err, stream) 
+        {
+          if (err) {
+            console.log("deu ruim")
+          } else {
+            console.log(Date.now(), ' | gRPC-Client | Message from GSub node ID: ' + validator_key + ' sent to rippled server and received with status '+stream);
+          }
+        });
+        // try {
+        //     client.toRippled(send_to_rippled, function(err, response) {
+        //         console.log(Date.now(), ' | gRPC-Client | Message from GSub node ID: ' + validator_key + ' sent to rippled server');});
+        // } catch (error) {
             
-        }
+        // }
         
     })
 
