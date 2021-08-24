@@ -132,6 +132,9 @@ const gosssib = async() => {
         try {
             client.toRippled({message: msg.data, validator_key: msg.from}, function(err, response) {
                 console.log(msg.data.toString())
+                message_received = JSON.parse(msg.data)
+                console.log(message_received.msg)
+                console.log(message_received.validator_key)
                 console.log(Date.now(), ' | gRPC-Client | Message from GSub node ID: ' + msg.data + ' sent to rippled server');});
         } catch (error) {
             
