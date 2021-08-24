@@ -130,12 +130,8 @@ const gosssib = async() => {
 
     node1.pubsub.on(topic, (msg) => {
         try {
-            client.toRippled({message: msg.data, validator_key: msg.from}, function(err, response) {
-                console.log(msg.data.toString())
-                message_received = JSON.parse(msg.data)
-                console.log(message_received.msg)
-                console.log(message_received.validator_key)
-                console.log(Date.now(), ' | gRPC-Client | Message from GSub node ID: ' + msg.data + ' sent to rippled server');});
+            client.toRippled({message: JSON.parse(msg.data).msg, validator_key: JSON.parse(msg.data).validator_key}, function(err, response) {
+                console.log(Date.now(), ' | gRPC-Client | Message from GSub node ID: ' + JSON.parse(msg.data).validator_key + ' sent to rippled server');});
         } catch (error) {
             
         }
