@@ -133,7 +133,7 @@ const gosssib = async() => {
         validator_key = message_received.validator_key.toString().replace( /[\r\n]+/gm, "" );
 
         var send_to_rippled = {message: message_received.message, validator_key: validator_key}
-        var call = client.toRippled({message: message_received.message, validator_key: validator_key}, function(err, stream) 
+        var call = client.toRippled({message: message.data, validator_key: validator_key}, function(err, stream) 
         {
           if (err) {
             console.log("deu ruim")
