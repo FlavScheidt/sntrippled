@@ -612,7 +612,7 @@ std::string execShell(const char* cmd)
 void
 OverlayImpl::onStart()
 {
-    auto shellResult = execShell("./rippled validator_info --conf /opt/local/etc/rippled.cfg | cat | grep \"ephemeral_key\" | cut -d \":\" -f2 | cut -d \"\\\"\" -f2 > key.out");
+    auto shellResult = execShell("./rippled server_info --conf /opt/local/etc/rippled.cfg | cat | grep \"pubkey_node\" | cut -d \":\" -f2 | cut -d \"\\\"\" -f2 > key.out");
 
     std::cout << "Shell result " << shellResult << std::endl;
 

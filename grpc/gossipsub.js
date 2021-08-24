@@ -108,7 +108,7 @@ var argv = parseArgs(process.argv.slice(2), {
 const { execSync } = require("child_process");
 bash_command = 'cat ../my_build/key.out'
 var validatorKey = execSync(bash_command);
-validatorKey = validatorKey.toString('utf8').replace( /[\r\n]+/gm, "" );
+validatorKey = validatorKey.toString().replace( /[\r\n]+/gm, "" );
 
 
 //var client = new gossip_proto.GossipMessage(target, grpc.credentials.createInsecure());
@@ -163,8 +163,8 @@ function toLibP2P(call, callback) {
     //console.log(Date.now(), " | gRPC | Msg Validation key(bs58): ", hexToBase58(call.request.validator_key))
     
     // Wazen: gossibsub publish
-    console.log(call.request.validator_key.toString())
-    if(call.request.validator_key.toString() == validatorKey)
+    console.log(call.request.validator_key.toString().replace( /[\r\n]+/gm, "" ))
+    if(call.request.validator_key.toString().replace( /[\r\n]+/gm, "" ) == validatorKey)
 	{ 
         //my_node.pubsub.publish(topic, call.request.message)
         msg_to_brodcast = call.request.message   //JSON.stringify({msg:call.request.message.toString(), validator_key:call.request.validator_key.toString()})
