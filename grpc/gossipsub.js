@@ -167,9 +167,9 @@ function toLibP2P(call, callback) {
 	{ 
         //my_node.pubsub.publish(topic, call.request.message)
         //msg_to_brodcast = call.request.message   //JSON.stringify({msg:call.request.message.toString(), validator_key:call.request.validator_key.toString()})
-         msg_to_brodcast = {message:call.request.message, validator_key:validatorKey};
+         msg_to_brodcast = {message:call.request.message.toString(), validator_key:validatorKey.toString()};
         my_node.pubsub.publish(topic,msg_to_brodcast) //publish the whole msg + validator key
-        console.log("GRPC-Server: Put on Gossipsub: " + msg_to_brodcast)
+        console.log("GRPC-Server: Put on Gossipsub: " + msg_to_brodcast.message + " " + msg_to_brodcast.validator_key)
 	}
     console.log("___________________________________________")
     callback(null, {
