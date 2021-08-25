@@ -134,7 +134,7 @@ const gosssib = async() => {
         validation_message = message_received.message.toString().replace( /[\r\n]+/gm, "" );
 
         var send_to_rippled = {message: validation_message, validator_key: validator_key}
-        var call = client.toRippled({message: message.data, validator_key: validator_key}, function(err, stream) 
+        var call = client.toRippled({message: validation_message, validator_key: validator_key}, function(err, stream) 
         {
           if (err) {
             console.log(err)
