@@ -130,7 +130,7 @@ const gosssib = async() => {
     node1.on('peer:discovery', (peer) => console.log(Date.now(), " | Discovered:", peer.id.toB58String()))
 
     node1.pubsub.on(topic, (message) => {
-        message_string = message.data.toString('latin1').replace(/[']/g, "\'").replace(/\t/g, "\\t").replace(/["]/g, "\"").replace(/[`]/g, "\`").replace(/[\n]/, "\\n");
+        message_string = message.data.toString('latin1').replace(/[']/g, "\'").replace(/\t/g, "\\t").replace(/["]/g, "\"").replace(/[`]/g, "\`").replace(/[\n]/, "");
         console.log(message_string)
 
         message_received = JSON.parse(message_string)
