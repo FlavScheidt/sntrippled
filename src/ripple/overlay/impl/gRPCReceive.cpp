@@ -166,11 +166,9 @@ namespace gossipServer
             //Here is the copy
             bytes_transferred = boost::asio::buffer_copy(read_buffer_grpc.prepare(gossip.message().size()), boost::asio::buffer(gossip.message()));
             read_buffer_grpc.commit(bytes_transferred);
-
             std::cout << "Copy done" << std::endl;
             
             dump_buffer(std::cout << "Message received: ", read_buffer_grpc);
-            
 
             //Prepare the buffer to be read
             read_buffer_grpc.commit(bytes_transferred);

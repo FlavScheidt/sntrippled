@@ -129,10 +129,10 @@ const gosssib = async() => {
     node1.on('peer:discovery', (peer) => console.log(Date.now(), " | Discovered:", peer.id.toB58String()))
 
     node1.pubsub.on(topic, (message) => {
-        message_string = message.data.toString().replace(/[']/g, "\'").replace(/["]/g, "\"").replace(/[\n]/, "\\n");
+        message_string = message.data.toString('unicode').replace(/[']/g, "\'").replace(/\t/g, "\\t").replace(/["]/g, "\"").replace(/[`]/g, "\`").replace(/[\n]/, "\\n");
         console.log(message_string)
-""
-        message_received = JSON.parse(message_string)//.replace(/(\r\n|\n|\r)/gm, "\\n"));
+
+        message_received = JSON.parse(message_string)
         validator_key = message_received.validator_key.toString().replace(/(\r\n|\n|\r)/gm, "");
         validation_message = message_received.message;
 
@@ -140,7 +140,6 @@ const gosssib = async() => {
         console.log(validator_key)
         console.log(validation_message)
 
-        var send_to_rippled = {message: validation_message, validator_key: validator_key}
         var call = client.toRippled({message: message.data, validator_key: validator_key}, function(err, stream) 
         {
           if (err) {
