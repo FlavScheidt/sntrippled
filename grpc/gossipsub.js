@@ -143,11 +143,12 @@ const gosssib = async() => {
 
         var call = client.toRippled({message: validation_message, validator_key: validator_key}, function(err, stream) 
         {
-          if (err) {
-            // console.log(err)
-          } else {
-            console.log(Date.now(), ' | gRPC-Client | Message from GSub node ID: ' + validator_key + ' sent to rippled server and received with status '+stream);
-          }
+          if (err) 
+          {
+            console.log(err)
+          } 
+
+        console.log(Date.now(), ' | gRPC-Client | Message from GSub node ID: ' + validator_key + ' sent to rippled server and received with status '+stream);
         });
         // try {
         //     client.toRippled(send_to_rippled, function(err, response) {
