@@ -141,7 +141,7 @@ const gosssib = async() => {
         console.log(validator_key)
         console.log(validation_message)
 
-        var call = client.toRippled({message: message.data, validator_key: validator_key}, function(err, stream) 
+        var call = client.toRippled({message: validation_message, validator_key: validator_key}, function(err, stream) 
         {
           if (err) {
             // console.log(err)
