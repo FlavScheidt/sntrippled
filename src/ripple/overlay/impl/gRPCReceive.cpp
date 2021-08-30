@@ -158,16 +158,11 @@ namespace gossipServer
             // inside the buffer, make the same treatment we have on onReadMessage
             // and invoke invokeProtocolMessage(). Then I just need to pray.
                         //Print on the standard output
-            std::cout << "Message received grpc buffer " << gossip.message() << std::endl;
-            std::cout << "key" << gossip.validator_key() << std::endl;
-
-            std::cout << "Before copying" << std::endl;
 
             //Here is the copy
             bytes_transferred = boost::asio::buffer_copy(read_buffer_grpc.prepare(gossip.message().size()), boost::asio::buffer(gossip.message()));
             read_buffer_grpc.commit(bytes_transferred);
-            std::cout << "Copy done" << std::endl;
-            
+
             dump_buffer(std::cout << "Message received: ", read_buffer_grpc);
 
             //Prepare the buffer to be read
@@ -186,6 +181,8 @@ namespace gossipServer
             std::cout << "Got index " << validator_key << std::endl;
 
             std::shared_ptr<ripple::PeerImp> peerObject = ovl->peerObjs[gossip.validator_key()];
+
+            std::cout << "Got object" << std::endl;
 
             auto peerID_rcv = peerObject->id();
 

@@ -137,11 +137,10 @@ const gosssib = async() => {
         validator_key = message_received.validator_key.toString().replace(/(\r\n|\n|\r)/gm, "");
         validation_message = Buffer.from(message_received.message, 'latin1');
 
-        console.log(message_received)
-        console.log(validator_key)
-        console.log(validation_message)
+        // console.log(message_received)
+        // console.log(validator_key)
+        // console.log(validation_message)
 
-        // validator_key = "hello"
         validator_key = Buffer.from(validator_key, 'latin1')
 
         var call = client.toRippled({message: validation_message, validator_key: validator_key}, function(err, stream) 
@@ -151,7 +150,7 @@ const gosssib = async() => {
             console.log(err)
           } 
 
-        console.log(Date.now(), ' | gRPC-Client | Message from GSub node ID: ' + validator_key + ' sent to rippled server and received with status '+stream);
+        console.log(Date.now(), ' | gRPC-Client | Message from GSub node ID: ' + validator_key + ' sent to rippled server and received with status '+ validation_message);
         });
         // try {
         //     client.toRippled(send_to_rippled, function(err, response) {
