@@ -16,7 +16,6 @@
  *
  */
 
- import { Buffer } from 'buffer';
 
 
 // Gossibsub part
