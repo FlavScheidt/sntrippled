@@ -134,7 +134,7 @@ const gosssib = async() => {
 
         message_received = JSON.parse(message_string)
         validator_key = message_received.validator_key.toString().replace(/(\r\n|\n|\r)/gm, "");
-        validation_message = message_received.message;
+        validation_message = buffer.from(message_received.message, 'latin1');
 
         console.log(message_received)
         console.log(validator_key)
