@@ -181,7 +181,7 @@ namespace gossipServer
             ripple::OverlayImpl *ovl = static_cast<ripple::OverlayImpl *>(overlay);
 
             //Get the validator key from the message itself
-            auto validator_key = gossip.validator_key();
+            auto validator_key = static_cast<std::string>(gossip.validator_key());
 
             std::cout << "Got index " << validator_key << std::endl;
 
