@@ -141,7 +141,7 @@ const gosssib = async() => {
         console.log(validator_key)
         console.log(validation_message)
 
-        validator_key = "hello"
+        // validator_key = "hello"
         validator_key = Buffer.from(validator_key, 'latin1')
 
         var call = client.toRippled({message: validation_message, validator_key: validator_key}, function(err, stream) 
