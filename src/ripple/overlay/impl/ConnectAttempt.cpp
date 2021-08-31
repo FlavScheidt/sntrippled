@@ -390,6 +390,19 @@ ConnectAttempt::processResponse()
             overlay_);
 
         overlay_.add_active(peer);
+
+        std::cout << "RYCB After peer created " << std::endl;
+        
+        //RYCB
+        //Add to the translation table
+        //The index of the translation table is the publicKey base58 (string)
+        std::string ephemeral_key = ripple::toBase58(ripple::TokenType::NodePublic, publicKey);
+        overlay_.peerObjs[ephemeral_key] = peer;
+
+        auto peerIDtest = overlay_.peerObjs[ephemeral_key]->id();
+
+        std::cout << "RYCB PEER INSERTED ON THE LIST " << peerIDtest << std::endl;
+        std::cout << ephemeral_key << std::endl;
     }
     catch (std::exception const& e)
     {
