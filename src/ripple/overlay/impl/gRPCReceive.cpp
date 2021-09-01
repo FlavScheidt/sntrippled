@@ -157,10 +157,14 @@ namespace gossipServer
             // to call read_some. So I will just copy what's on gossip.message()
             // inside the buffer, make the same treatment we have on onReadMessage
             // and invoke invokeProtocolMessage(). Then I just need to pray.
-                        //Print on the standard output
+
+            //Trying to convert it to string first
+            auto message_received = static_cast<std::string>(gossip.message());
+            std::cout << "Received as string: " << message_received << std::endl;
 
             //Here is the copy
-            bytes_transferred = boost::asio::buffer_copy(read_buffer_grpc.prepare(gossip.message().size()), boost::asio::buffer(gossip.message()));
+            // bytes_transferred = boost::asio::buffer_copy(read_buffer_grpc.prepare(gossip.message().size()), boost::asio::buffer(gossip.message()));
+            bytes_transferred = boost::asio::buffer_copy(read_buffer_grpc.prepare(message_received.size()), boost::asio::buffer(message_received));
             read_buffer_grpc.commit(bytes_transferred);
 
             dump_buffer(std::cout << "Message received: ", read_buffer_grpc);
@@ -179,13 +183,9 @@ namespace gossipServer
             auto validator_key = static_cast<std::string>(gossip.validator_key());
 
             std::cout << "Got index " << validator_key << std::endl;
-
             std::shared_ptr<ripple::PeerImp> peerObject = ovl->peerObjs[gossip.validator_key()];
-
             std::cout << "Got object" << std::endl;
-
             auto peerID_rcv = peerObject->id();
-
             std::cout << "RYCB Peer selected: " << peerID_rcv << std::endl;
 
             //Read and process buffer, unless there is an error on invokeProtoclMessage

@@ -130,18 +130,16 @@ const gosssib = async() => {
     node1.on('peer:discovery', (peer) => console.log(Date.now(), " | Discovered:", peer.id.toB58String()))
 
     node1.pubsub.on(topic, (message) => {
-        message_string = message.data.toString('latin1')
-        console.log(message_string)
+        // message_string = message.data//.toString()
+        // console.log(message_string)
 
-        message_received = JSON.parse(message_string)
-        validator_key = message_received.validator_key.toString().replace(/(\r\n|\n|\r)/gm, "");
+        message_received = JSON.parse(message.data)
+        validator_key = Buffer.from(message_received.validator_key.replace(/(\r\n|\n|\r)/gm, ""), 'ascii');
         validation_message = Buffer.from(message_received.message, 'latin1');
 
-        // console.log(message_received)
-        // console.log(validator_key)
-        // console.log(validation_message)
-
-        validator_key = Buffer.from(validator_key, 'latin1')
+        console.log(message_received)
+        console.log(validator_key)
+        console.log(validation_message)
 
         var call = client.toRippled({message: validation_message, validator_key: validator_key}, function(err, stream) 
         {
@@ -150,7 +148,8 @@ const gosssib = async() => {
             console.log(err)
           } 
 
-        console.log(Date.now(), ' | gRPC-Client | Message from GSub node ID: ' + validator_key + ' sent to rippled server and received with status '+ validation_message);
+        console.log(Date.now(), ' | gRPC-Client | Message from GSub node ID: ' + validator_key + ' sent to rippled server ');
+        console.log(validation_message)
         });
         // try {
         //     client.toRippled(send_to_rippled, function(err, response) {
