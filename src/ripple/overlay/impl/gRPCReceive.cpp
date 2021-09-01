@@ -1,5 +1,10 @@
 #include <ripple/overlay/gRPCReceive.h>
 
+#include <sstream>
+#include <iostream>
+
+#include <boost/property_tree/json_parser.hpp>
+
 #include <boost/algorithm/clamp.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/predicate.hpp>
@@ -128,6 +133,7 @@ namespace gossipServer
         boost::system::error_code ec;
         std::size_t bytes_consumed;
 
+
         std::cout << "Call Data" << std::endl;
 
         if (status_ == CREATE) 
@@ -158,9 +164,19 @@ namespace gossipServer
             // inside the buffer, make the same treatment we have on onReadMessage
             // and invoke invokeProtocolMessage(). Then I just need to pray.
 
-            //Trying to convert it to string first
-            auto message_received = static_cast<std::string>(gossip.message());
-            std::cout << "Received as string: " << message_received << std::endl;
+            //The tricky part is that the message is sent as a json
+            // so node.js won't corrupt the data with the string enconding
+            // Which means that we need to extract the message from the json
+
+            // Side note: node.js makes me drink
+            // Reading as a json
+            std::stringstream ss;
+            boost::property_tree::ptree pt;
+            ss << gossip.message();
+            boost::property_tree::read_json(ss, pt);
+            auto message_received = pt.get<std::string>("message");
+
+            std::cout << "Message received, json: " << message_received << std::endl;
 
             //Here is the copy
             // bytes_transferred = boost::asio::buffer_copy(read_buffer_grpc.prepare(gossip.message().size()), boost::asio::buffer(gossip.message()));
