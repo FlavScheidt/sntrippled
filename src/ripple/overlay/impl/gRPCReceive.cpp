@@ -176,6 +176,7 @@ namespace gossipServer
             boost::property_tree::read_json(ss, pt);
             auto message_received = pt.get<std::string>("message");
 
+            std::cout << "Message received pure: " << gossip.message() << std::endl;
             std::cout << "Message received, json: " << message_received << std::endl;
 
             //Here is the copy
