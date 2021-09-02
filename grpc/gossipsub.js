@@ -149,7 +149,7 @@ const gosssib = async() => {
           } 
 
         console.log(Date.now(), ' | gRPC-Client | Message from GSub node ID: ' + validator_key + ' sent to rippled server ');
-        console.log(validation_message)
+        // console.log(validation_message)
         });
         // try {
         //     client.toRippled(send_to_rippled, function(err, response) {
