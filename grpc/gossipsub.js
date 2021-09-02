@@ -131,15 +131,15 @@ const gosssib = async() => {
 
     node1.pubsub.on(topic, (message) => {
         message_string = message.data.toString('latin1')
-        console.log(message_string)
+        // console.log(message_string)
 
         message_received = JSON.parse(message_string)
         validator_key = Buffer.from(message_received.validator_key.replace(/(\r\n|\n|\r)/gm, ""), 'ascii');
-        validation_message = Buffer.from(message_received.message, 'latin1');
+        // validation_message = Buffer.from(message_received.message, 'latin1');
 
-        console.log(message_received)
-        console.log(validator_key.toString())
-        console.log(validation_message.toString())
+        // console.log(message_received)
+        // console.log(validator_key.toString())
+        // console.log(validation_message.toString())
 
         var call = client.toRippled({message: message.data, validator_key: validator_key}, function(err, stream) 
         {
