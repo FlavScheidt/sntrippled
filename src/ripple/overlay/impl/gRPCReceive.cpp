@@ -175,8 +175,8 @@ namespace gossipServer
             ss << gossip.message();
 
             boost::property_tree::read_json(ss, pt);
-            auto message_test = pt.get<std::string>("message");
-            std::string message_received = pt.get<std::string>("message");
+            // auto & child = pt.get_child("Message")
+            std::string message_received = pt.get<std::string>("message.data");
             // char * aux =  pt.get<char *>("message");
             // strcpy(message_received, aux);
 
