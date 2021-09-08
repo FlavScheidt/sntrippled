@@ -4,6 +4,8 @@
 #include <iostream>
 
 #include <boost/property_tree/json_parser.hpp>
+#include <boost/json.hpp>
+#include <boost/json/src.hpp>
 
 #include <boost/algorithm/clamp.hpp>
 #include <boost/algorithm/string.hpp>
@@ -170,19 +172,40 @@ namespace gossipServer
 
             // Side note: node.js makes me drink
             // Reading as a json
-            std::stringstream ss;
-            boost::property_tree::ptree pt;
-            ss << gossip.message();
+            namespace json = boost::json;
+            auto doc = json::parse(gossip.message()).as_object();
 
-            boost::property_tree::read_json(ss, pt);
-            // auto & child = pt.get_child("Message")
-            auto message_received = pt.get<std::string>("message");
-            // char * aux =  pt.get<char *>("message");
-            // strcpy(message_received, aux);
+            auto& arr   = doc["message"].as_object()["data"];
+            auto  bytes = json::value_to<std::vector<uint8_t>>(arr);
+            std::string text(bytes.begin(), bytes.end());
+
+            //std::cout << "message(): " << gossip.message() << "\n";
+            std::cout << "doc:       " << doc              << "\n";
+            std::cout << "arr:       " << arr              << "\n";
+            std::cout << "bytes:     ";
+
+            for (int val : bytes)
+                std::cout << " " << val;
+
+            std::cout << "\ntext: " << std::quoted(text) << "\n";
+
+            std::stringstream ss;
+            ss << std::quoted(text);
+            std::string message_received = ss.str();
+
+            // std::stringstream ss;
+            // boost::property_tree::ptree pt;
+            // ss << gossip.message();
+
+            // boost::property_tree::read_json(ss, pt);
+            // // auto & child = pt.get_child("Message")
+            // auto message_received = pt.get<std::string>("message.data");
+            // // char * aux =  pt.get<char *>("message");
+            // // strcpy(message_received, aux);
 
             std::cout << "Message received pure: " << gossip.message() << std::endl;
             std::cout << "Message received, json: " << message_received << std::endl;
-            // dump_buffer(std::cout << "Message received json : ", message_received);
+            // dump_buffer(std::cout << "Message received json : ", message_received);            
 
             //Here is the copy
             // bytes_transferred = boost::asio::buffer_copy(read_buffer_grpc.prepare(gossip.message().size()), boost::asio::buffer(gossip.message()));
