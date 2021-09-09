@@ -179,16 +179,6 @@ namespace gossipServer
             auto  bytes = json::value_to<std::vector<uint8_t>>(arr);
             std::string text(bytes.begin(), bytes.end());
 
-            //std::cout << "message(): " << gossip.message() << "\n";
-            std::cout << "doc:       " << doc              << "\n";
-            std::cout << "arr:       " << arr              << "\n";
-            std::cout << "bytes:     ";
-
-            for (int val : bytes)
-                std::cout << " " << val;
-
-            std::cout << "\ntext: " << std::quoted(text) << "\n";
-
             std::stringstream ss;
             ss << std::quoted(text);
             std::string message_received = ss.str();
@@ -209,7 +199,7 @@ namespace gossipServer
 
             //Here is the copy
             // bytes_transferred = boost::asio::buffer_copy(read_buffer_grpc.prepare(gossip.message().size()), boost::asio::buffer(gossip.message()));
-            bytes_transferred = boost::asio::buffer_copy(read_buffer_grpc.prepare(message_received.size()), boost::asio::buffer(message_received));
+            bytes_transferred = boost::asio::buffer_copy(read_buffer_grpc.prepare(bytes.size()), boost::asio::buffer(bytes));
             read_buffer_grpc.commit(bytes_transferred);
 
             dump_buffer(std::cout << "Message received: ", read_buffer_grpc);
