@@ -183,22 +183,11 @@ namespace gossipServer
             ss << std::quoted(text);
             std::string message_received = ss.str();
 
-            // std::stringstream ss;
-            // boost::property_tree::ptree pt;
-            // ss << gossip.message();
-
-            // boost::property_tree::read_json(ss, pt);
-            // // auto & child = pt.get_child("Message")
-            // auto message_received = pt.get<std::string>("message.data");
-            // // char * aux =  pt.get<char *>("message");
-            // // strcpy(message_received, aux);
-
-            std::cout << "Message received pure: " << gossip.message() << std::endl;
-            std::cout << "Message received, json: " << message_received << std::endl;
+            // std::cout << "Message received pure: " << gossip.message() << std::endl;
+            // std::cout << "Message received, json: " << message_received << std::endl;
             // dump_buffer(std::cout << "Message received json : ", message_received);            
 
             //Here is the copy
-            // bytes_transferred = boost::asio::buffer_copy(read_buffer_grpc.prepare(gossip.message().size()), boost::asio::buffer(gossip.message()));
             bytes_transferred = boost::asio::buffer_copy(read_buffer_grpc.prepare(bytes.size()), boost::asio::buffer(bytes));
             read_buffer_grpc.commit(bytes_transferred);
 
