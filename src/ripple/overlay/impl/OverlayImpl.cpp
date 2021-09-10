@@ -318,7 +318,7 @@ OverlayImpl::onHandoff(
             peer->run();
         }
 
-        std::cout << "RYCB After peer created " << std::endl;
+        std::cout << "RYCB After peer created on onHandoff" << std::endl;
         
         //RYCB
         //Add to the translation table

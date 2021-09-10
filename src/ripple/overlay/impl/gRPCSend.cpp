@@ -104,6 +104,7 @@ namespace gossipClient
         {
             auto ephemeralKey = execShell("cat key.out");
             pkSend.assign(ephemeralKey);
+            std::cout << "Got node's own key" << std::endl;
         }
     
         

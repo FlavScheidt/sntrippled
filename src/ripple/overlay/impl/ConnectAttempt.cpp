@@ -391,7 +391,7 @@ ConnectAttempt::processResponse()
 
         overlay_.add_active(peer);
 
-        std::cout << "RYCB After peer created " << std::endl;
+        std::cout << "RYCB After peer created on ConnectAttempt " << std::endl;
         
         //RYCB
         //Add to the translation table
