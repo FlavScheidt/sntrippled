@@ -171,12 +171,14 @@ OverlayImpl::~OverlayImpl()
 
 //------------------------------------------------------------------------------
 
+
 Handoff
 OverlayImpl::onHandoff(
     std::unique_ptr<stream_type>&& stream_ptr,
     http_request_type&& request,
     endpoint_type remote_endpoint)
 {
+
     auto const id = next_id_++;
     beast::WrappedSink sink(app_.logs()["Peer"], makePrefix(id));
     beast::Journal journal(sink);
@@ -315,6 +317,20 @@ OverlayImpl::onHandoff(
 
             peer->run();
         }
+
+        std::cout << "RYCB After peer created on onHandoff" << std::endl;
+        
+        //RYCB
+        //Add to the translation table
+        //The index of the translation table is the publicKey base58 (string)
+        std::string ephemeral_key = ripple::toBase58(ripple::TokenType::NodePublic, publicKey);
+        peerObjs[ephemeral_key] = peer;
+
+        auto peerIDtest = peerObjs[ephemeral_key]->id();
+
+        std::cout << "RYCB PEER INSERTED ON THE LIST " << peerIDtest << std::endl;
+        std::cout << ephemeral_key << std::endl;
+
         handoff.moved = true;
         return handoff;
     }
@@ -575,9 +591,28 @@ OverlayImpl::onPrepare()
     }
 }
 
+//Execute command to get the ephemeral key and put it into the proto messag
+//from https://stackoverflow.com/a/478960
+std::string execShell(const char* cmd)
+{
+    std::array<char, 128> buffer;
+    std::string result;
+
+    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
+    if (!pipe) {
+        throw std::runtime_error("popen() failed!");
+    }
+    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
+        result += buffer.data();
+    }
+    return result;
+}
+
+
 void
 OverlayImpl::onStart()
 {
+    auto shellResult = execShell("./rippled server_info --conf /opt/local/etc/rippled.cfg | cat | grep \"pubkey_node\" | cut -d \":\" -f2 | cut -d \"\\\"\" -f2 > key.out");
     auto const timer = std::make_shared<Timer>(*this);
     std::lock_guard lock(mutex_);
     list_.emplace(timer.get(), timer);

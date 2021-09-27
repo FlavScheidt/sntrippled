@@ -1,5 +1,12 @@
 #include <ripple/overlay/gRPCReceive.h>
 
+#include <sstream>
+#include <iostream>
+
+#include <boost/property_tree/json_parser.hpp>
+#include <boost/json.hpp>
+#include <boost/json/src.hpp>
+
 #include <boost/algorithm/clamp.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/predicate.hpp>
@@ -9,7 +16,6 @@
 
 //RYCB Beat me up, I'm doing ugly stuff
 int gRPCportNum = 1;
-
 
 namespace gossipServer
 {
@@ -23,7 +29,7 @@ namespace gossipServer
         gossipServer::runArguments *args = static_cast<gossipServer::runArguments *>(tArguments);
         
         beast::Journal journal = static_cast<beast::Journal>(args->journal);
-        // ripple::PeerImp *peerObject = static_cast<ripple::PeerImp *>(upperObject);
+        // ripple::PeerImp *peerObject = static_cast<ripple::PeerImp *>(overlay);
         gossipServer::GossipMessageImpl *grpcIn;
 
         pthread_mutex_lock(&gRPClock);
@@ -33,7 +39,7 @@ namespace gossipServer
         {
             pthread_mutex_unlock(&gRPClock);
             JLOG(journal.debug()) << "Thread number " << pthread_self() <<  " initiating gRPC server";
-            grpcIn->ConnectAndRun(args->upperObject);
+            grpcIn->ConnectAndRun(args->overlay);
         }
         else
         {
@@ -90,7 +96,7 @@ namespace gossipServer
 
 
     void
-    GossipMessageImpl::ConnectAndRun(void * upperObject)
+    GossipMessageImpl::ConnectAndRun(void *  overlay)
     {
         std::string server_address(gRPCport);
         ServerBuilder builder;
@@ -106,7 +112,7 @@ namespace gossipServer
         server_ = builder.BuildAndStart();
         JLOG(journal_.debug()) << "gRPC server listening on port " << gRPCport;
         // Proceed to the server's main loop.
-        HandleRpcs(upperObject);
+        HandleRpcs(overlay);
 
         pthread_exit(0);
     }
@@ -114,20 +120,23 @@ namespace gossipServer
     // Take in the "service" instance (in this case representing an asynchronous
     // server) and the completion queue "cq" used for asynchronous communication
     // with the gRPC runtime.
-    GossipMessageImpl::CallData::CallData(GossipMessage::AsyncService* service, ServerCompletionQueue* cq, void * upperObject, beast::Journal journal)
+    GossipMessageImpl::CallData::CallData(GossipMessage::AsyncService* service, ServerCompletionQueue* cq, void *  overlay, beast::Journal journal)
         : service_(service), cq_(cq), responder_(&ctx_), status_(CREATE), journal_(journal)
     {
         // Invoke the serving logic right away.
-        GossipMessageImpl::CallData::Proceed(upperObject);
+        GossipMessageImpl::CallData::Proceed(overlay);
     }
 
 
     void 
-    GossipMessageImpl::CallData::Proceed(void * upperObject) 
+    GossipMessageImpl::CallData::Proceed(void *  overlay) 
     {
         std::size_t bytes_transferred;
         boost::system::error_code ec;
         std::size_t bytes_consumed;
+
+
+        // std::cout << "Call Data" << std::endl;
 
         if (status_ == CREATE) 
         {
@@ -143,12 +152,11 @@ namespace gossipServer
         } 
         else if (status_ == PROCESS) 
         {
-
-            ripple::PeerImp *peerObject = static_cast<ripple::PeerImp *>(upperObject);
+            // std::cout << "process" << std::endl;
             // Spawn a new CallData instance to serve new clients while we process
             // the one for this CallData. The instance will deallocate itself as
             // part of its FINISH state.
-            new CallData(service_, cq_, upperObject, journal_);
+            new CallData(service_, cq_, overlay, journal_);
             // // The actual processing.
  
             //RYCB
@@ -158,14 +166,32 @@ namespace gossipServer
             // inside the buffer, make the same treatment we have on onReadMessage
             // and invoke invokeProtocolMessage(). Then I just need to pray.
 
+            //The tricky part is that the message is sent as a json
+            // so node.js won't corrupt the data with the string enconding
+            // Which means that we need to extract the message from the json
+
+            // Side note: node.js makes me drink
+            // Reading as a json
+            namespace json = boost::json;
+            auto doc = json::parse(gossip.message()).as_object();
+
+            auto& arr   = doc["message"].as_object()["data"];
+            auto  bytes = json::value_to<std::vector<uint8_t>>(arr);
+            std::string text(bytes.begin(), bytes.end());
+
+            std::stringstream ss;
+            ss << std::quoted(text);
+            std::string message_received = ss.str();
+
+            // std::cout << "Message received pure: " << gossip.message() << std::endl;
+            // std::cout << "Message received, json: " << message_received << std::endl;
+            // dump_buffer(std::cout << "Message received json : ", message_received);            
+
             //Here is the copy
-            bytes_transferred = boost::asio::buffer_copy(read_buffer_grpc.prepare(gossip.message().size()), boost::asio::buffer(gossip.message()));
+            bytes_transferred = boost::asio::buffer_copy(read_buffer_grpc.prepare(bytes.size()), boost::asio::buffer(bytes));
             read_buffer_grpc.commit(bytes_transferred);
 
-
-            //Print on the standard output
             dump_buffer(std::cout << "Message received: ", read_buffer_grpc);
-            
 
             //Prepare the buffer to be read
             read_buffer_grpc.commit(bytes_transferred);
@@ -173,6 +199,16 @@ namespace gossipServer
             //Hin is zero just because today is tuesday
             //peerObject is the handler
             std::size_t  hint = 0;
+
+            //Get peerOjbect from the translation table on the overlay object
+            ripple::OverlayImpl *ovl = static_cast<ripple::OverlayImpl *>(overlay);
+
+            //Get the validator key from the message itself
+            auto validator_key = static_cast<std::string>(gossip.validator_key());
+
+            std::shared_ptr<ripple::PeerImp> peerObject = ovl->peerObjs[gossip.validator_key()];
+            auto peerID_rcv = peerObject->id();
+            std::cout << "RYCB Peer selected: " << peerID_rcv << std::endl;
 
             //Read and process buffer, unless there is an error on invokeProtoclMessage
             while (read_buffer_grpc.size() > 0)
@@ -214,10 +250,10 @@ namespace gossipServer
 
     // This can be run in multiple threads if needed.
     void 
-    GossipMessageImpl::HandleRpcs(void * upperObject) 
+    GossipMessageImpl::HandleRpcs(void *  overlay) 
     {
         // Spawn a new CallData instance to serve new clients.
-        new GossipMessageImpl::CallData(&service_, cq_.get(), upperObject, journal_);
+        new GossipMessageImpl::CallData(&service_, cq_.get(), overlay, journal_);
         void* tag;  // uniquely identifies a request.
         bool ok;
         while (true) 
@@ -229,7 +265,7 @@ namespace gossipServer
             // tells us whether there is any kind of event or cq_ is shutting down.
             GPR_ASSERT(cq_->Next(&tag, &ok));
             GPR_ASSERT(ok);
-            static_cast<GossipMessageImpl::CallData*>(tag)->GossipMessageImpl::CallData::Proceed(upperObject);
+            static_cast<GossipMessageImpl::CallData*>(tag)->GossipMessageImpl::CallData::Proceed(overlay);
         }
     }
 

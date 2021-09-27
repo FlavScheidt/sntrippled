@@ -212,8 +212,8 @@ PeerImp::run()
     JLOG(journal_.debug()) << "gRPC outbound channel open";
 
     //Start gRPC Gossip sub server
-    void * thisObject = this;
-    gossipServer::runArguments tArgs = {thisObject, journal_};
+    void * overlayObj = &overlay_;
+    gossipServer::runArguments tArgs = {overlayObj, journal_};
 
     if (pthread_mutex_init(&gRPClock, NULL) != 0)
     {

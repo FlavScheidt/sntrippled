@@ -52,7 +52,7 @@ namespace gossipServer
 
     typedef struct runArguments
     {
-        void * upperObject;
+        void * overlay;
         beast::Journal journal;
     } runArguments;
 
@@ -65,7 +65,7 @@ namespace gossipServer
         explicit GossipMessageImpl(beast::Journal journal);
         // void Run();
 
-        void  ConnectAndRun(void * upperObject);
+        void  ConnectAndRun(void * overlay);
 
         // Status toRippled(ServerContext* context, const Gossip* gossip, Control* control);
 
@@ -83,8 +83,8 @@ namespace gossipServer
         class CallData 
         {
             public:
-            CallData(GossipMessage::AsyncService* service, ServerCompletionQueue* cq, void * upperObject, beast::Journal journal);
-            void Proceed(void * upperObject);
+            CallData(GossipMessage::AsyncService* service, ServerCompletionQueue* cq, void * overlay, beast::Journal journal);
+            void Proceed(void * overlay);
 
             boost::beast::multi_buffer read_buffer_grpc;
 
@@ -111,7 +111,7 @@ namespace gossipServer
             beast::Journal const journal_; 
         };
 
-        void HandleRpcs(void * upperObject);
+        void HandleRpcs(void * overlay);
 
         std::unique_ptr<ServerCompletionQueue> cq_;
         GossipMessage::AsyncService service_;
