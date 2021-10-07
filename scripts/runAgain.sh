@@ -41,8 +41,8 @@ mv log.out "log_${LOG_DATE}_${LOG_HOUR}_${LOG_MIN}_${LOG_SEC}.out"
 ###########################
 cd /root/sntrippled/grpc
 
-mv log_server.out "logServer_${LOG_DATE}_${LOG_HOUR}_${LOG_MIN}_${LOG_SEC}.out"
-mv log_client.out "logClient_${LOG_DATE}_${LOG_HOUR}_${LOG_MIN}_${LOG_SEC}.out"
+mv log.out "log_${LOG_DATE}_${LOG_HOUR}_${LOG_MIN}_${LOG_SEC}.out"
+#mv log_client.out "logClient_${LOG_DATE}_${LOG_HOUR}_${LOG_MIN}_${LOG_SEC}.out"
 
 
 # # ##########################
