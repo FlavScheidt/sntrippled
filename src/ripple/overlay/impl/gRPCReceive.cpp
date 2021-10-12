@@ -11,6 +11,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/beast/core/ostream.hpp>
+#include "boost/date_time/posix_time/posix_time.hpp"
 
 //In this case, the rippled acts as the server, receiving the validation and responding with the status
 
@@ -128,9 +129,23 @@ namespace gossipServer
     }
 
 
+    std::wstring 
+    FormatTime(boost::posix_time::ptime now)
+    {
+      using namespace boost::posix_time;
+      static std::locale loc(std::wcout.getloc(),
+                             new wtime_facet(L"%Y%m%d_%H%M%S"));
+
+      std::basic_stringstream<wchar_t> wss;
+      wss.imbue(loc);
+      wss << now;
+      return wss.str();
+    }
+
     void 
     GossipMessageImpl::CallData::Proceed(void *  overlay) 
     {
+        using namespace boost::posix_time;
         std::size_t bytes_transferred;
         boost::system::error_code ec;
         std::size_t bytes_consumed;
@@ -191,9 +206,19 @@ namespace gossipServer
             bytes_transferred = boost::asio::buffer_copy(read_buffer_grpc.prepare(bytes.size()), boost::asio::buffer(bytes));
             read_buffer_grpc.commit(bytes_transferred);
 
-            dump_buffer(std::cout << "Message received: ", read_buffer_grpc);
+            ptime now = second_clock::universal_time();
+
+            std::wstring ws(FormatTime(now));
+            // std::wcout << ws << std::endl;
+
+            std::string bufferToPrint = boost::beast::buffers_to_string(read_buffer_grpc.data());
+            bufferToPrint.erase(std::remove(bufferToPrint.begin(), bufferToPrint.end(), '\n'), bufferToPrint.end());
+
+            std::wcout << ws;
+            std::cout << " | Message received | " << bufferToPrint << std::endl;
 
             //Prepare the buffer to be read
+            
             read_buffer_grpc.commit(bytes_transferred);
 
             //Hin is zero just because today is tuesday
