@@ -214,11 +214,8 @@ namespace gossipServer
             std::string bufferToPrint = boost::beast::buffers_to_string(read_buffer_grpc.data());
             bufferToPrint.erase(std::remove(bufferToPrint.begin(), bufferToPrint.end(), '\n'), bufferToPrint.end());
 
-            std::wcout << ws;
-            std::cout << " | Message received | " << bufferToPrint << std::endl;
-
             //Prepare the buffer to be read
-            
+
             read_buffer_grpc.commit(bytes_transferred);
 
             //Hin is zero just because today is tuesday
@@ -234,6 +231,9 @@ namespace gossipServer
             std::shared_ptr<ripple::PeerImp> peerObject = ovl->peerObjs[gossip.validator_key()];
             auto peerID_rcv = peerObject->id();
             std::cout << "RYCB Peer selected: " << peerID_rcv << std::endl;
+
+            std::wcout << ws;
+            std::cout << " | Message received | " << bufferToPrint << " | " << validator_key << std::endl;
 
             //Read and process buffer, unless there is an error on invokeProtoclMessage
             while (read_buffer_grpc.size() > 0)
