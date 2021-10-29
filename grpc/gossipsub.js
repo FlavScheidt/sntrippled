@@ -131,7 +131,7 @@ const gosssib = async() => {
 
     node1.pubsub.on(topic, (message) => {
         message_string = message.data.toString('latin1')
-        message.ack()
+        // message.ack()
         // console.log(message_string)
 
         message_received = JSON.parse(message_string)
