@@ -78,7 +78,7 @@ const createNode = async() => {
             pubsub: {                     // The pubsub options (and defaults) can be found in the pubsub router documentation
                 enabled: true,
                 emitSelf: false,                                  // whether the node should emit to self on publish
-                //gossipIncoming: false   //boolean identifying if incoming messages on a subscribed topic should be automatically gossiped (defaults to true)
+                gossipIncoming: false   //boolean identifying if incoming messages on a subscribed topic should be automatically gossiped (defaults to true)
                 //globalSignaturePolicy: SignaturePolicy.StrictSign // message signing policy
             }
         }
@@ -131,11 +131,12 @@ const gosssib = async() => {
 
     node1.pubsub.on(topic, (message) => {
         message_string = message.data.toString('latin1')
+        message.ack()
         // console.log(message_string)
 
         message_received = JSON.parse(message_string)
         validator_key = Buffer.from(message_received.validator_key.replace(/(\r\n|\n|\r)/gm, ""), 'latin1');
-        // validation_message = Buffer.from(message_received.message, 'latin1');
+        validation_message = Buffer.from(message_received.message, 'latin1');
 
         // console.log(message_received)
         // console.log(validator_key.toString())
@@ -147,8 +148,18 @@ const gosssib = async() => {
           {
             console.log(err)
           } 
+            // Importing module
+            const date = require('date-and-time')
+              
+            // Creating object of current date and time 
+            // by using Date() 
+            const now  =  new Date();
+              
+            // Formating the date and time
+            // by using date.format() method
+            const dateTimeNow = date.format(now,'YYYY/MM/DD HH:mm:ss');
 
-        console.log(Date.now(), ' | gRPC-Client | Message from GSub node ID: ' + validator_key + ' sent to rippled server ');
+        console.log(dateTimeNow, ' | gRPC-Client | \"' + validation_message.toString().replace(/(\r\n|\n|\r)/gm, "").replace(/\|/g, "").replace(/"/g, "") + '\" | \"' + validator_key + '\" |');
         // console.log(validation_message)
         });
         // try {
