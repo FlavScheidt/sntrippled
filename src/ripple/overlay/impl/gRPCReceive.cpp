@@ -212,8 +212,8 @@ namespace gossipServer
             // std::wcout << ws << std::endl;
 
             std::string bufferToPrint = boost::beast::buffers_to_string(read_buffer_grpc.data());
-            bufferToPrint.erase(std::remove(bufferToPrint.begin(), bufferToPrint.end(), '\n'), bufferToPrint.end());
             bufferToPrint.erase(std::remove(bufferToPrint.begin(), bufferToPrint.end(), '|'), bufferToPrint.end());
+            bufferToPrint.erase(std::remove(bufferToPrint.begin(), bufferToPrint.end(), '\n'), bufferToPrint.end());
 
             //Prepare the buffer to be read
 
