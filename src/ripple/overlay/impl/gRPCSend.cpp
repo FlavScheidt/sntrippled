@@ -94,6 +94,8 @@ namespace gossipClient
         // std::cout << pthread_self()  << "|" << " full validator key "  << ripple::toBase58(TokenType::NodePublic, m->getValidatorKey);
         if (validator)
         {
+            //If the message is not originated here, we shouldnt send it to grpc
+
             ripple::PublicKey const& validatorKey = *validator;
             // pkStream << validatorKey;
             // pkSend = pkStream.str();
@@ -105,35 +107,36 @@ namespace gossipClient
             auto ephemeralKey = execShell("cat key.out");
             pkSend.assign(ephemeralKey);
             std::cout << "Got node's own key" << std::endl;
+
+
+            // std::string _test = "Hello World =)";
+            gossip.set_message(_buffer);
+            // gossip.set_message(_test);
+            gossip.set_validator_key(pkSend);
+
+            _buffer.erase(std::remove(_buffer.begin(), _buffer.end(), '|'), _buffer.end());
+            _buffer.erase(std::remove(_buffer.begin(), _buffer.end(), '\n'), _buffer.end());
+        
+            std::cout << pthread_self() << "| message sent | " << _buffer  << "|" << pkSend << std::endl;
+
+
+            // Container for the data we expect from the server.
+            Control control;
+
+            // Context for the client. It could be used to convey extra information to
+            // the server and/or tweak certain RPC behaviors.
+            ClientContext context;
+
+            // Overwrite the call's compression algorithm to DEFLATE.
+            // context.set_compression_algorithm(GRPC_COMPRESS_DEFLATE);
+
+            // The actual RPC.
+            Status status = stub_->toLibP2P(&context, gossip, &control);
+
+            // Act upon its status.
+            if (!status.ok()) 
+            return 1;
         }
 
-
-        // std::string _test = "Hello World =)";
-        gossip.set_message(_buffer);
-        // gossip.set_message(_test);
-        gossip.set_validator_key(pkSend);
-
-        _buffer.erase(std::remove(_buffer.begin(), _buffer.end(), '|'), _buffer.end());
-        _buffer.erase(std::remove(_buffer.begin(), _buffer.end(), '\n'), _buffer.end());
-    
-        std::cout << pthread_self() << "| message sent | " << _buffer  << "|" << pkSend << std::endl;
-
-
-        // Container for the data we expect from the server.
-        Control control;
-
-        // Context for the client. It could be used to convey extra information to
-        // the server and/or tweak certain RPC behaviors.
-        ClientContext context;
-
-        // Overwrite the call's compression algorithm to DEFLATE.
-        // context.set_compression_algorithm(GRPC_COMPRESS_DEFLATE);
-
-        // The actual RPC.
-        Status status = stub_->toLibP2P(&context, gossip, &control);
-
-        // Act upon its status.
-        if (!status.ok()) 
-            return 1;
     }
 }

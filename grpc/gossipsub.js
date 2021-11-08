@@ -196,8 +196,10 @@ function toLibP2P(call, callback) {
     //console.log(Date.now(), " | gRPC | Msg Validation key(bs58): ", hexToBase58(call.request.validator_key))
     
     // Wazen: gossibsub publish
+    console.log("validator_key: ", validatorKey);
     if(call.request.validator_key.toString().replace( /[\r\n]+/gm, "" ) == validatorKey)
 	{ 
+        console.log("entered: ", call.request.validator_key.toString().replace( /[\r\n]+/gm, "" ))
         //my_node.pubsub.publish(topic, call.request.message)
         msg_to_brodcast = JSON.stringify({message:call.request.message, validator_key:call.request.validator_key.toString()})
         // msg_to_brodcast = call.request.message;
