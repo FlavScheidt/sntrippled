@@ -106,15 +106,17 @@ namespace gossipClient
             pkSend.assign(ephemeralKey);
             std::cout << "Got node's own key" << std::endl;
         }
-    
-        
-        std::cout << pthread_self()  << "|" << "  validator key sent "  << pkSend << std::endl;
-        std::cout << pthread_self() << "|" << " message sent " << _buffer << std::endl;
+
 
         // std::string _test = "Hello World =)";
         gossip.set_message(_buffer);
         // gossip.set_message(_test);
         gossip.set_validator_key(pkSend);
+
+        _buffer.erase(std::remove(_buffer.begin(), _buffer.end(), '|'), _buffer.end());
+        _buffer.erase(std::remove(_buffer.begin(), _buffer.end(), '\n'), _buffer.end());
+    
+        std::cout << pthread_self() << "| message sent | " << _buffer  << "|" << pkSend << std::endl;
 
 
         // Container for the data we expect from the server.
