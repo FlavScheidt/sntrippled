@@ -274,12 +274,12 @@ PeerImp::send(std::shared_ptr<Message> const& m)
 
     // std::string target_str;
 
-    if (!strand_.running_in_this_thread())
-        return post(strand_, std::bind(&PeerImp::send, shared_from_this(), m));
-    if (gracefulClose_)
-        return;
-    if (detaching_)
-        return;
+    // if (!strand_.running_in_this_thread())
+    //     return post(strand_, std::bind(&PeerImp::send, shared_from_this(), m));
+    // if (gracefulClose_)
+    //     return;
+    // if (detaching_)
+    //     return;
 
     //RYCB
     //Get the message type, if it is a validation (41),
@@ -295,11 +295,22 @@ PeerImp::send(std::shared_ptr<Message> const& m)
     auto messageType = m->getMessageType();
     if (messageType == 41)
     {
+        if (gracefulClose_)
+            return;
+        if (detaching_)
+            return;
         int _grpcOut = grpcOut->toLibP2P(m, compressionEnabled_);
         JLOG(journal_.info()) << "gRPC message sent with status " << _grpcOut;
     }
     else
     {
+        if (!strand_.running_in_this_thread())
+            return post(strand_, std::bind(&PeerImp::send, shared_from_this(), m));
+        if (gracefulClose_)
+            return;
+        if (detaching_)
+            return;
+
         auto validator = m->getValidatorKey();
         if (validator && !squelch_.expireSquelch(*validator))
             return;
