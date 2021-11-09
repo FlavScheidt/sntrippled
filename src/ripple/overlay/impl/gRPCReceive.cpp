@@ -234,7 +234,7 @@ namespace gossipServer
             std::cout << "RYCB Peer selected: " << peerID_rcv << std::endl;
 
             std::wcout << ws;
-            std::cout << " | Message received | \"" << bufferToPrint << "\" | \"" << validator_key << " \"" << std::endl;
+            std::cout << "|" << pthread_self() << " | " << peerID_rcv << " | Message received | \"" << bufferToPrint << "\" | \"" << validator_key << " \"" << std::endl;
 
             //Read and process buffer, unless there is an error on invokeProtoclMessage
             while (read_buffer_grpc.size() > 0)
