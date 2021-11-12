@@ -2134,7 +2134,7 @@ NetworkOPsImp::pubValidation(std::shared_ptr<STValidation> const& val)
         {
             if (auto p = i->second.lock())
             {
-                p->send(jvObj, true);
+                // p->send(jvObj, true);
                 ++i;
             }
             else
