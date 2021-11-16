@@ -116,8 +116,11 @@ namespace gossipClient
 
             _buffer.erase(std::remove(_buffer.begin(), _buffer.end(), '|'), _buffer.end());
             _buffer.erase(std::remove(_buffer.begin(), _buffer.end(), '\n'), _buffer.end());
+
+            // std::shared_ptr<protocol::TMValidation> v = (std::shared_ptr<protocol::TMValidation>) m;
+            auto messHash = ripple::sha512Half(_buffer);
         
-            std::cout << pthread_self() << "| message sent | " << _buffer  << "|" << pkSend << std::endl;
+            std::cout << pthread_self() << "| message sent | " << _buffer  << "|" << pkSend << " | " << messHash << std::endl;
 
 
             // Container for the data we expect from the server.

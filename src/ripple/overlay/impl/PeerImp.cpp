@@ -290,7 +290,7 @@ PeerImp::send(std::shared_ptr<Message> const& m)
     //Cant put the message on the queue when it is a validation
     //Otherwise it will be sent anyway
 
-    //Squelching does not apply to validations
+    //Squelching does not apply to transactions
 
     auto messageType = m->getMessageType();
     if (messageType == 41)
@@ -342,8 +342,8 @@ PeerImp::send(std::shared_ptr<Message> const& m)
             return;
 
 
-    //void async_write(AsyncWriteStream & s, const ConstBufferSequence & buffers, WriteHandler handler);
-    //The handler to be called when the write operation completes. Copies will be made of the handler as required
+        //void async_write(AsyncWriteStream & s, const ConstBufferSequence & buffers, WriteHandler handler);
+        //The handler to be called when the write operation completes. Copies will be made of the handler as required
         boost::asio::async_write(
             stream_, //assync write stream
             boost::asio::buffer(   //writing buffer
@@ -2378,6 +2378,8 @@ PeerImp::onMessage(std::shared_ptr<protocol::TMValidation> const& m)
                 overlay_.updateSlotAndSquelch(
                     key, val->getSignerPublic(), id_, protocol::mtVALIDATION);
             JLOG(p_journal_.trace()) << "Validation: duplicate";
+            //  rycb
+            std::cout << "Validation: duplicate" << std::endl;
             return;
         }
 
