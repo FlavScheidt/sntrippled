@@ -7,6 +7,8 @@
 #include <boost/json.hpp>
 #include <boost/json/src.hpp>
 
+#include <ripple/overlay/impl/sha512.hh>
+
 #include <boost/algorithm/clamp.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/predicate.hpp>
@@ -234,7 +236,7 @@ namespace gossipServer
             std::cout << "RYCB Peer selected: " << peerID_rcv << std::endl;
 
             std::wcout << ws;
-            std::cout << "|" << pthread_self() << " | " << peerID_rcv << " | Message received | \"" << bufferToPrint << "\" | \"" << validator_key << " \"" << std::endl;
+            std::cout << "|" << pthread_self() << " | " << peerID_rcv << " | Message received | \"" << bufferToPrint << "\" | \"" << validator_key << " \" | " << sw::sha512::calculate(&bufferToPrint, sizeof(bufferToPrint)) << std::endl;
 
             //Read and process buffer, unless there is an error on invokeProtoclMessage
             while (read_buffer_grpc.size() > 0)

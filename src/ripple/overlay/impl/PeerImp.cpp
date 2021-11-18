@@ -299,8 +299,11 @@ PeerImp::send(std::shared_ptr<Message> const& m)
             return;
         if (detaching_)
             return;
-        int _grpcOut = grpcOut->toLibP2P(m, compressionEnabled_);
-        JLOG(journal_.info()) << "gRPC message sent with status " << _grpcOut;
+        //RYCB 
+        //Sending in the upper function
+        //Pray
+        // int _grpcOut = grpcOut->toLibP2P(m, compressionEnabled_);
+        // JLOG(journal_.info()) << "gRPC message sent with status " << _grpcOut;
     }
     else
     {
@@ -2378,8 +2381,7 @@ PeerImp::onMessage(std::shared_ptr<protocol::TMValidation> const& m)
                 overlay_.updateSlotAndSquelch(
                     key, val->getSignerPublic(), id_, protocol::mtVALIDATION);
             JLOG(p_journal_.trace()) << "Validation: duplicate";
-            //  rycb
-            std::cout << "Validation: duplicate" << std::endl;
+            std::cout << " Key: " << key << std::endl;
             return;
         }
 

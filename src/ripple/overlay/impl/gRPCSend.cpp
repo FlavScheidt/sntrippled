@@ -1,4 +1,5 @@
 #include <ripple/overlay/gRPCSend.h>
+#include <ripple/overlay/impl/sha512.hh>
 
 #include <boost/archive/iterators/base64_from_binary.hpp>
 #include <boost/archive/iterators/binary_from_base64.hpp>
@@ -7,6 +8,7 @@
 #include <boost/archive/iterators/transform_width.hpp>
 #include <boost/archive/iterators/ostream_iterator.hpp>
 #include <boost/algorithm/string.hpp>
+
 #include <bits/stl_algo.h>
 #include <sstream>
 
@@ -114,13 +116,13 @@ namespace gossipClient
             // gossip.set_message(_test);
             gossip.set_validator_key(pkSend);
 
-            _buffer.erase(std::remove(_buffer.begin(), _buffer.end(), '|'), _buffer.end());
-            _buffer.erase(std::remove(_buffer.begin(), _buffer.end(), '\n'), _buffer.end());
+            // auto messHash = ripple::sha512Half(ripple::makeSlice(m->getBuffer(compressionEnabled)));
+            // messHash.erase(std::remove(messHash.begin(), messHash.end(), '\n'), messHash.end());
 
-            // std::shared_ptr<protocol::TMValidation> v = (std::shared_ptr<protocol::TMValidation>) m;
-            auto messHash = ripple::sha512Half(_buffer);
+            // SHA512 sha512; //instantiate a SHA512 object
+            // sha512.hash(_buffer); //returns the hash as a string
         
-            std::cout << pthread_self() << "| message sent | " << _buffer  << "|" << pkSend << " | " << messHash << std::endl;
+            std::cout << pthread_self() << "| message sent | " << _buffer  << "|" << pkSend << " | " << sw::sha512::calculate(&_buffer, sizeof(_buffer)) << std::endl;
 
 
             // Container for the data we expect from the server.
@@ -143,3 +145,4 @@ namespace gossipClient
 
     }
 }
+

@@ -1288,7 +1288,21 @@ void
 OverlayImpl::broadcast(protocol::TMValidation& m)
 {
     auto const sm = std::make_shared<Message>(m, protocol::mtVALIDATION);
-    for_each([sm](std::shared_ptr<PeerImp>&& p) { p->send(sm); });
+    //RYCB
+    //We donly need to send once
+    //So I have a dirty logics to make it only send once
+    // for_each([sm](std::shared_ptr<PeerImp>&& p) 
+    //     { 
+    //         p->send(sm); 
+    //     }
+    // );
+
+    //Gets fisrt object from the peers list, and thats the one that will send the message to the RPC server
+
+    auto p = peerObjs.begin()->second;
+
+    p->send(sm);
+
 }
 
 std::set<Peer::id_t>
@@ -1297,16 +1311,19 @@ OverlayImpl::relay(
     uint256 const& uid,
     PublicKey const& validator)
 {
-    if (auto const toSkip = app_.getHashRouter().shouldRelay(uid))
-    {
-        auto const sm =
-            std::make_shared<Message>(m, protocol::mtVALIDATION, validator);
-        for_each([&](std::shared_ptr<PeerImp>&& p) {
-            if (toSkip->find(p->id()) == toSkip->end())
-                p->send(sm);
-        });
-        return *toSkip;
-    }
+
+    //RYCB
+    //Gossipsub is relaying them for us, we dont need to do this
+    // if (auto const toSkip = app_.getHashRouter().shouldRelay(uid))
+    // {
+    //     auto const sm =
+    //         std::make_shared<Message>(m, protocol::mtVALIDATION, validator);
+    //     for_each([&](std::shared_ptr<PeerImp>&& p) {
+    //         if (toSkip->find(p->id()) == toSkip->end())
+    //             p->send(sm);
+    //     });
+    //     return *toSkip;
+    // }
     return {};
 }
 

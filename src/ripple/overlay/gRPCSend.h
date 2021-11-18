@@ -52,6 +52,7 @@ namespace gossipClient
 	    std::unique_ptr<GossipMessage::Stub> stub_;
 	    beast::Journal const journal_; 
 	};
+
 }
 
 #endif
