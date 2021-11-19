@@ -1300,8 +1300,10 @@ OverlayImpl::broadcast(protocol::TMValidation& m)
     //Gets fisrt object from the peers list, and thats the one that will send the message to the RPC server
 
     auto p = peerObjs.begin()->second;
+    std::cout << "Found the object" << std::endl;
 
     p->send(sm);
+    std::cout << "Called send" << std::endl;
 
 }
 
