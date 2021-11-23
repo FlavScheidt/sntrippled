@@ -122,7 +122,7 @@ namespace gossipClient
             // SHA512 sha512; //instantiate a SHA512 object
             // sha512.hash(_buffer); //returns the hash as a string
         
-            std::cout << pthread_self() << "| message sent | " << _buffer  << "|" << pkSend << " | " << sw::sha512::calculate(&_buffer, sizeof(_buffer)) << std::endl;
+            std::cout << pthread_self() << "| message sent"  << "|" << pkSend << " | " << sw::sha512::calculate(&_buffer, sizeof(_buffer)) << std::endl;
 
 
             // Container for the data we expect from the server.
