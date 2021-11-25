@@ -391,7 +391,7 @@ ConnectAttempt::processResponse()
 
         overlay_.add_active(peer);
 
-        std::cout << "RYCB After peer created on ConnectAttempt " << std::endl;
+        // std::cout << "RYCB After peer created on ConnectAttempt " << std::endl;
         
         //RYCB
         //Add to the translation table
@@ -401,7 +401,7 @@ ConnectAttempt::processResponse()
 
         auto peerIDtest = overlay_.peerObjs[ephemeral_key]->id();
 
-        std::cout << "RYCB PEER INSERTED ON THE LIST " << peerIDtest << std::endl;
+        // std::cout << "RYCB PEER INSERTED ON THE LIST " << peerIDtest << std::endl;
         std::cout << ephemeral_key << std::endl;
     }
     catch (std::exception const& e)

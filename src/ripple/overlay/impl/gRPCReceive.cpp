@@ -214,7 +214,7 @@ namespace gossipServer
             // std::wcout << ws << std::endl;
 
             std::string bufferToPrint = boost::beast::buffers_to_string(read_buffer_grpc.data());
-            bufferToPrint.erase(std::remove(bufferToPrint.begin(), bufferToPrint.end(), '|'), bufferToPrint.end());
+            // bufferToPrint.erase(std::remove(bufferToPrint.begin(), bufferToPrint.end(), '|'), bufferToPrint.end());
             bufferToPrint.erase(std::remove(bufferToPrint.begin(), bufferToPrint.end(), '\n'), bufferToPrint.end());
 
             //Prepare the buffer to be read
@@ -233,10 +233,13 @@ namespace gossipServer
 
             std::shared_ptr<ripple::PeerImp> peerObject = ovl->peerObjs[gossip.validator_key()];
             auto peerID_rcv = peerObject->id();
-            std::cout << "RYCB Peer selected: " << peerID_rcv << std::endl;
+            // std::cout << "RYCB Peer selected: " << peerID_rcv << std::endl;
+
+            std::string messageHash = sw::sha512::calculate(&bufferToPrint, sizeof(bufferToPrint));
+            messageHash.erase(std::remove(messageHash.begin(), messageHash.end(), '\n'), messageHash.end());
 
             std::wcout << ws;
-            std::cout << "|" << pthread_self() << " | " << peerID_rcv << " | Message received | \"" <<  validator_key << " \" | " << sw::sha512::calculate(&bufferToPrint, sizeof(bufferToPrint)) << std::endl;
+            std::cout << "|" << pthread_self() << " | " << peerID_rcv << " | Message received | " <<  validator_key << " | " << messageHash  << std::endl;
 
             //Read and process buffer, unless there is an error on invokeProtoclMessage
             while (read_buffer_grpc.size() > 0)

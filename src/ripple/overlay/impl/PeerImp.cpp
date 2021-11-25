@@ -299,9 +299,7 @@ PeerImp::send(std::shared_ptr<Message> const& m)
             return;
         if (detaching_)
             return;
-        //RYCB 
-        //Sending in the upper function
-        //Pray
+        
         int _grpcOut = grpcOut->toLibP2P(m, compressionEnabled_);
         JLOG(journal_.info()) << "gRPC message sent with status " << _grpcOut;
     }
