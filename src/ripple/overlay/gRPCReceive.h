@@ -31,7 +31,6 @@
 
 #include "org/xrpl/rpc/v1/gossip_message.grpc.pb.h"
 
-#include <iostream>
 #include <boost/asio/buffers_iterator.hpp>
 #include <boost/beast.hpp>
 
