@@ -145,7 +145,7 @@ namespace gossipClient
             if (!status.ok()) 
               return 1;
           
-            reuturn 0;
+            return 0;
         }
 
     }
