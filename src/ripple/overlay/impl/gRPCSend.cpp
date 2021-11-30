@@ -96,13 +96,14 @@ namespace gossipClient
         // std::cout << pthread_self()  << "|" << " full validator key "  << ripple::toBase58(TokenType::NodePublic, m->getValidatorKey);
         if (validator)
         {
-            //If the message is not originated here, we shouldnt send it to grpc
+//             //If the message is not originated here, we shouldnt send it to grpc
 
-            ripple::PublicKey const& validatorKey = *validator;
-            // pkStream << validatorKey;
-            // pkSend = pkStream.str();
+//             ripple::PublicKey const& validatorKey = *validator;
+//             // pkStream << validatorKey;
+//             // pkSend = pkStream.str();
 
-            pkSend.assign(ripple::toBase58(ripple::TokenType::NodePublic, validatorKey));
+//             pkSend.assign(ripple::toBase58(ripple::TokenType::NodePublic, validatorKey));
+              return 2;
         }
         else
         {
