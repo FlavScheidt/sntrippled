@@ -143,7 +143,9 @@ namespace gossipClient
 
             // Act upon its status.
             if (!status.ok()) 
-            return 1;
+              return 1;
+          
+            reuturn 0;
         }
 
     }
