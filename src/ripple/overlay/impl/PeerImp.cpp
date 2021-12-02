@@ -2372,10 +2372,11 @@ PeerImp::onMessage(std::shared_ptr<protocol::TMValidation> const& m)
                 overlay_.updateSlotAndSquelch(
                     key, val->getSignerPublic(), id_, protocol::mtVALIDATION);
             JLOG(p_journal_.trace()) << "Validation: duplicate";
-            std::cout << " Key: " << key << std::endl;
+            std::cout << "Validation duplicate" << std::endl;
             return;
         }
-
+        std::cout << "Validation unique" << std::endl;
+ 
         auto const isTrusted =
             app_.validators().trusted(val->getSignerPublic());
 
