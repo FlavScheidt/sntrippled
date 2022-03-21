@@ -31,6 +31,18 @@ const MulticastDNS = require('libp2p-mdns')
 const bs58 = require('ripple-bs58');
 const base64 = require('base-64');
 const sha256 = require('sha256');
+const Bootstrap = require('libp2p-bootstrap')
+
+
+//Peers we want to connect to 
+const bootstrapers = [
+        '/ip4/104.131.131.82/tcp/4001/p2p/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ',
+        '/dnsaddr/bootstrap.libp2p.io/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
+        '/dnsaddr/bootstrap.libp2p.io/p2p/QmbLHAnMoJPWSCR5Zhtx6BHJX9KiKNN6tpvbUcqanj75Nb',
+        '/dnsaddr/bootstrap.libp2p.io/p2p/QmZa1sAxajnQjVM8WjWXoMbmPd7NsWhfKsPkErzpm9wGkp',
+        '/dnsaddr/bootstrap.libp2p.io/p2p/QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa',
+        '/dnsaddr/bootstrap.libp2p.io/p2p/QmcZf59bWwK5XFi76CZX8cbJ4BhTzzA3gU1ZjYZcYW3dwt'
+    ];
 
 
 function hexToBase58(key) {
@@ -67,8 +79,16 @@ const createNode = async() => {
             connEncryption: [NOISE],
             pubsub: Gossipsub,
             peerDiscovery: [MulticastDNS]
+            // peerDiscovery: [Bootstrap]
         },
         config: {
+            //  peerDiscovery: {
+            //     bootstrap: {
+            //         interval: 60e3,
+            //         enabled: true,
+            //         list: bootstrapers
+            //     }
+            // },
             peerDiscovery: {
                 mdns: {
                     interval: 20e3,
@@ -78,13 +98,27 @@ const createNode = async() => {
             pubsub: {                     // The pubsub options (and defaults) can be found in the pubsub router documentation
                 enabled: true,
                 emitSelf: false,                                  // whether the node should emit to self on publish
-                gossipIncoming: false   //boolean identifying if incoming messages on a subscribed topic should be automatically gossiped (defaults to true)
+                //gossipIncoming: false   //boolean identifying if incoming messages on a subscribed topic should be automatically gossiped (defaults to true)
                 //globalSignaturePolicy: SignaturePolicy.StrictSign // message signing policy
             }
         }
     })
 
+    node.connectionManager.on('peer:connect', (connection) => {
+        console.log('Connection established to:', connection.remotePeer.toB58String())    // Emitted when a peer has been found
+    })
+
+    node.on('peer:discovery', (peerId) => {
+        // No need to dial, autoDial is on
+        console.log('Discovered:', peerId.toB58String())
+    })
+
+
+
     await node.start()
+    // node.multiaddrs.forEach(addr => {
+    //     console.log(`listening on addresses: ${addr.toString()}/p2p/${node.peerId.toB58String()}`)
+    // })
 
     return node
 }
@@ -131,12 +165,11 @@ const gosssib = async() => {
 
     node1.pubsub.on(topic, (message) => {
         message_string = message.data.toString('latin1')
-        // message.ack()
         // console.log(message_string)
 
         message_received = JSON.parse(message_string)
         validator_key = Buffer.from(message_received.validator_key.replace(/(\r\n|\n|\r)/gm, ""), 'latin1');
-        validation_message = Buffer.from(message_received.message, 'latin1');
+        // validation_message = Buffer.from(message_received.message, 'latin1');
 
         // console.log(message_received)
         // console.log(validator_key.toString())
@@ -148,18 +181,8 @@ const gosssib = async() => {
           {
             console.log(err)
           } 
-            // Importing module
-            const date = require('date-and-time')
-              
-            // Creating object of current date and time 
-            // by using Date() 
-            const now  =  new Date();
-              
-            // Formating the date and time
-            // by using date.format() method
-            const dateTimeNow = date.format(now,'YYYY/MM/DD HH:mm:ss');
 
-        console.log(dateTimeNow, ' | gRPC-Client | \"' + validation_message.toString().replace(/(\r\n|\n|\r)/gm, "").replace(/\|/g, "").replace(/"/g, "") + '\" | \"' + validator_key + '\" |');
+        console.log(Date.now(), ' | gRPC-Client | Message from GSub node ID: ' + validator_key + ' sent to rippled server ');
         // console.log(validation_message)
         });
         // try {
@@ -196,16 +219,14 @@ function toLibP2P(call, callback) {
     //console.log(Date.now(), " | gRPC | Msg Validation key(bs58): ", hexToBase58(call.request.validator_key))
     
     // Wazen: gossibsub publish
-    console.log("validator_key: ", validatorKey);
     if(call.request.validator_key.toString().replace( /[\r\n]+/gm, "" ) == validatorKey)
-	{ 
-        console.log("entered: ", call.request.validator_key.toString().replace( /[\r\n]+/gm, "" ))
+    { 
         //my_node.pubsub.publish(topic, call.request.message)
         msg_to_brodcast = JSON.stringify({message:call.request.message, validator_key:call.request.validator_key.toString()})
         // msg_to_brodcast = call.request.message;
         my_node.pubsub.publish(topic,msg_to_brodcast) //publish the whole msg + validator key
         console.log("GRPC-Server: Put on Gossipsub: " + msg_to_brodcast)
-	}
+    }
     console.log("___________________________________________")
     callback(null, {
         message: 'True'
