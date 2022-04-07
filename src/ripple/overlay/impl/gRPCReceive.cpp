@@ -205,21 +205,16 @@ namespace gossipServer
             // dump_buffer(std::cout << "Message received json : ", message_received);            
 
             //Here is the copy
-            bytes_transferred = boost::asio::buffer_copy(read_buffer_grpc.prepare(bytes.size()), boost::asio::buffer(bytes));
+            bytes_transferred = boost::asio::buffer_copy(read_buffer_grpc.prepare(gossip.message().size()), boost::asio::buffer(gossip.message()));
             read_buffer_grpc.commit(bytes_transferred);
 
             ptime now = second_clock::universal_time();
-
             std::wstring ws(FormatTime(now));
             // std::wcout << ws << std::endl;
 
             std::string bufferToPrint = boost::beast::buffers_to_string(read_buffer_grpc.data());
             // bufferToPrint.erase(std::remove(bufferToPrint.begin(), bufferToPrint.end(), '|'), bufferToPrint.end());
             bufferToPrint.erase(std::remove(bufferToPrint.begin(), bufferToPrint.end(), '\n'), bufferToPrint.end());
-
-            //Prepare the buffer to be read
-
-            read_buffer_grpc.commit(bytes_transferred);
 
             //Hin is zero just because today is tuesday
             //peerObject is the handler
@@ -238,9 +233,11 @@ namespace gossipServer
             std::string messageHash = sw::sha512::calculate(&bufferToPrint, sizeof(bufferToPrint));
             messageHash.erase(std::remove(messageHash.begin(), messageHash.end(), '\n'), messageHash.end());
 
+            // Log format is "time | thread | peer | handler | received/sent | orign/destination | data"
             std::wcout << ws;
-            std::cout << "|" << pthread_self() << " | " << peerID_rcv << " | Message received | " <<  validator_key << " | " << messageHash  << std::endl;
+            std::cout << "|" << pthread_self() << " | " << peerID_rcv << " | gRPC-Server | received | GossipSub | " << messageHash  << " | " <<  validator_key << std::endl;
 
+            control.set_stream(1); //set the response, it changes if an error occurs
             //Read and process buffer, unless there is an error on invokeProtoclMessage
             while (read_buffer_grpc.size() > 0)
             {
@@ -248,7 +245,8 @@ namespace gossipServer
                     ripple::invokeProtocolMessage(read_buffer_grpc.data(), *peerObject, hint);
                 if (ec)
                 {
-                    JLOG(journal_.warn()) << "ERROR on receiving gRPC message " << ec.message();
+                    JLOG(journal_.warn()) << "ERROR on interpreting gRPC message " << ec.message();
+                    control.set_stream(0); 
                 }
                 if (bytes_consumed == 0)
                     break;
@@ -261,8 +259,6 @@ namespace gossipServer
             // which means that we already have a loop occuring
             // and we don't need to trigger onReadMessage using
             // bind() to call the funtion recursivelly as a handler
-
-            control.set_stream(1); //set the response
 
             // And we are done! Let the gRPC runtime know we've finished, using the
             // memory address of this instance as the uniquely identifying tag for

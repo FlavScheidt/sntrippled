@@ -9,6 +9,8 @@
 #include <boost/archive/iterators/ostream_iterator.hpp>
 #include <boost/algorithm/string.hpp>
 
+#include "boost/date_time/posix_time/posix_time.hpp"
+
 #include <bits/stl_algo.h>
 #include <sstream>
 
@@ -75,6 +77,19 @@ namespace gossipClient
     {
     }
 
+    std::wstring 
+    FormatTime(boost::posix_time::ptime now)
+    {
+      using namespace boost::posix_time;
+      static std::locale loc(std::wcout.getloc(),
+                             new wtime_facet(L"%Y%m%d_%H%M%S"));
+
+      std::basic_stringstream<wchar_t> wss;
+      wss.imbue(loc);
+      wss << now;
+      return wss.str();
+    }
+
     int 
     GossipMessageClient::toLibP2P(std::shared_ptr<ripple::Message> const& m, ripple::compression::Compressed compressionEnabled_) 
     {
@@ -126,8 +141,13 @@ namespace gossipClient
             messageHash.erase(std::remove(messageHash.begin(), messageHash.end(), '\n'), messageHash.end());
 
             gossip.set_hash(messageHash);
-        
-            std::cout << pthread_self() << "| message sent |" << pkSend << " | " << messageHash << std::endl;
+
+
+            boost::posix_time::ptime now = boost::posix_time::second_clock::universal_time();
+            std::wstring ws(FormatTime(now));
+            std::wcout << ws;
+            // Log format is "time | thread | handler | received/sent | orign/destination | data"
+            std::cout << pthread_self() << "| gRPC-Client | sent | GossipSub | " << messageHash << " | " << pkSend << std::endl;
 
 
             // Container for the data we expect from the server.
