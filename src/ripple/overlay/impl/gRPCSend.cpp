@@ -124,6 +124,8 @@ namespace gossipClient
             // sha512.hash(_buffer); //returns the hash as a string
             std::string messageHash = sw::sha512::calculate(&_buffer, sizeof(_buffer));
             messageHash.erase(std::remove(messageHash.begin(), messageHash.end(), '\n'), messageHash.end());
+
+            gossip.set_hash(messageHash);
         
             std::cout << pthread_self() << "| message sent |" << pkSend << " | " << messageHash << std::endl;
 

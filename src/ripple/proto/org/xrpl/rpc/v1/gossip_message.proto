@@ -4,6 +4,7 @@ syntax = "proto3";
 // option java_package = "org.xrpl.rpc.v1";
 // option java_outer_classname = "GossipProto";
 // option objc_class_prefix = "HLW";
+option go_package = "github.com/FlavScheidt/gossipGoSnt/proto";
 
 package gossipmessage;
 
@@ -16,10 +17,9 @@ service GossipMessage
 
 message Gossip
 {
-	bytes message = 1;
-	//Not sure about the validator key here
-	//I guess the compressed message already has the vazlidator key
-	bytes validator_key = 2;
+	bytes Message = 1;
+	bytes Validator_Key = 2;
+	string hash = 3;
 }
 
 message Control
