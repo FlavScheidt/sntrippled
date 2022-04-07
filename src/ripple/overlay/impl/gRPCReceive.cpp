@@ -3,9 +3,9 @@
 #include <sstream>
 #include <iostream>
 
-#include <boost/property_tree/json_parser.hpp>
-#include <boost/json.hpp>
-#include <boost/json/src.hpp>
+// #include <boost/property_tree/json_parser.hpp>
+// #include <boost/json.hpp>
+// #include <boost/json/src.hpp>
 
 #include <ripple/overlay/impl/sha512.hh>
 
@@ -188,17 +188,17 @@ namespace gossipServer
             // Which means that we need to extract the message from the json
 
             // Side note: node.js makes me drink
-            // Reading as a json
-            namespace json = boost::json;
-            auto doc = json::parse(gossip.message()).as_object();
+            // // Reading as a json
+            // namespace json = boost::json;
+            // auto doc = json::parse(gossip.message()).as_object();
 
-            auto& arr   = doc["message"].as_object()["data"];
-            auto  bytes = json::value_to<std::vector<uint8_t>>(arr);
-            std::string text(bytes.begin(), bytes.end());
+            // auto& arr   = doc["message"].as_object()["data"];
+            // auto  bytes = json::value_to<std::vector<uint8_t>>(arr);
+            // std::string text(bytes.begin(), bytes.end());
 
-            std::stringstream ss;
-            ss << std::quoted(text);
-            std::string message_received = ss.str();
+            // std::stringstream ss;
+            // ss << std::quoted(text);
+            // std::string message_received = ss.str();
 
             // std::cout << "Message received pure: " << gossip.message() << std::endl;
             // std::cout << "Message received, json: " << message_received << std::endl;
