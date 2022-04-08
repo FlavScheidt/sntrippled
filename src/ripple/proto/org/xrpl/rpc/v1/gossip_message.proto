@@ -18,7 +18,7 @@ service GossipMessage
 message Gossip
 {
 	bytes Message = 1;
-	bytes Validator_Key = 2;
+	string Validator_Key = 2;
 	string hash = 3;
 }
 
