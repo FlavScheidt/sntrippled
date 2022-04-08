@@ -397,7 +397,7 @@ invokeProtocolMessage(
 
     bool success;
 
-    std::cout << pthread_self()  << "|" << "Message type " << header->message_type << std::endl;
+    // std::cout << pthread_self()  << "|" << "Message type " << header->message_type << std::endl;
 
     switch (header->message_type)
     {

@@ -227,14 +227,20 @@ namespace gossipServer
 
             //Get the validator key from the message itself
             auto validator_key = static_cast<std::string>(gossip.validator_key());
+            validator_key.erase(std::remove(validator_key.begin(), validator_key.end(), '\n'), validator_key.end());
+            validator_key.erase(std::remove(validator_key.begin(), validator_key.end(), ' '), validator_key.end());
             std::cout << "got validator key" << std::endl;
+            std::cout <<  gossip.validator_key() << std::endl;
 
             std::shared_ptr<ripple::PeerImp> peerObject = ovl->peerObjs[gossip.validator_key()];
+            std::cout <<  "selected peer" << std::endl;
+
             auto peerID_rcv = peerObject->id();
             std::cout << "RYCB Peer selected: " << peerID_rcv << std::endl;
 
-            std::string messageHash = sw::sha512::calculate(&bufferToPrint, sizeof(bufferToPrint));
-            messageHash.erase(std::remove(messageHash.begin(), messageHash.end(), '\n'), messageHash.end());
+            // std::string messageHash = sw::sha512::calculate(&bufferToPrint, sizeof(bufferToPrint));
+            // messageHash.erase(std::remove(messageHash.begin(), messageHash.end(), '\n'), messageHash.end());
+            auto messageHash = static_cast<std::string>(gossip.hash());
 
             // Log format is "time | thread | peer | handler | received/sent | orign/destination | data"
             std::wcout << ws;

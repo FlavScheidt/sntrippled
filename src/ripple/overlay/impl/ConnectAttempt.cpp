@@ -399,9 +399,9 @@ ConnectAttempt::processResponse()
         std::string ephemeral_key = ripple::toBase58(ripple::TokenType::NodePublic, publicKey);
         overlay_.peerObjs[ephemeral_key] = peer;
 
-        // auto peerIDtest = overlay_.peerObjs[ephemeral_key]->id();
+        auto peerIDtest = overlay_.peerObjs[ephemeral_key]->id();
 
-        // std::cout << "RYCB PEER INSERTED ON THE LIST " << peerIDtest << std::endl;
+        std::cout << "RYCB PEER INSERTED ON THE LIST " << peerIDtest << std::endl;
         std::cout << ephemeral_key << std::endl;
     }
     catch (std::exception const& e)
