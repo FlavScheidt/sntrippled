@@ -230,9 +230,9 @@ namespace gossipServer
             validator_key.erase(std::remove(validator_key.begin(), validator_key.end(), '\n'), validator_key.end());
             validator_key.erase(std::remove(validator_key.begin(), validator_key.end(), ' '), validator_key.end());
             std::cout << "got validator key" << std::endl;
-            std::cout <<  gossip.validator_key() << std::endl;
+            std::cout <<  validator_key << std::endl;
 
-            std::shared_ptr<ripple::PeerImp> peerObject = ovl->peerObjs[gossip.validator_key()];
+            std::shared_ptr<ripple::PeerImp> peerObject = ovl->peerObjs[validator_key];
             std::cout <<  "selected peer" << std::endl;
 
             auto peerID_rcv = peerObject->id();
