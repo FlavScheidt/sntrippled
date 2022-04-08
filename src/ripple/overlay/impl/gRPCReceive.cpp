@@ -207,7 +207,6 @@ namespace gossipServer
             //Here is the copy
             bytes_transferred = boost::asio::buffer_copy(read_buffer_grpc.prepare(gossip.message().size()), boost::asio::buffer(gossip.message()));
             read_buffer_grpc.commit(bytes_transferred);
-            std::cout << "copy" << std::endl;
 
             ptime now = second_clock::universal_time();
             std::wstring ws(FormatTime(now));
@@ -216,7 +215,6 @@ namespace gossipServer
             std::string bufferToPrint = boost::beast::buffers_to_string(read_buffer_grpc.data());
             // bufferToPrint.erase(std::remove(bufferToPrint.begin(), bufferToPrint.end(), '|'), bufferToPrint.end());
             bufferToPrint.erase(std::remove(bufferToPrint.begin(), bufferToPrint.end(), '\n'), bufferToPrint.end());
-            std::cout << "buffer to print" << std::endl;
 
             //Hin is zero just because today is tuesday
             //peerObject is the handler
@@ -229,14 +227,12 @@ namespace gossipServer
             auto validator_key = static_cast<std::string>(gossip.validator_key());
             validator_key.erase(std::remove(validator_key.begin(), validator_key.end(), '\n'), validator_key.end());
             validator_key.erase(std::remove(validator_key.begin(), validator_key.end(), ' '), validator_key.end());
-            std::cout << "got validator key" << std::endl;
-            std::cout <<  validator_key << std::endl;
+            // std::cout <<  validator_key << std::endl;
 
             std::shared_ptr<ripple::PeerImp> peerObject = ovl->peerObjs[validator_key];
-            std::cout <<  "selected peer" << std::endl;
 
             auto peerID_rcv = peerObject->id();
-            std::cout << "RYCB Peer selected: " << peerID_rcv << std::endl;
+            // std::cout << "RYCB Peer selected: " << peerID_rcv << std::endl;
 
             // std::string messageHash = sw::sha512::calculate(&bufferToPrint, sizeof(bufferToPrint));
             // messageHash.erase(std::remove(messageHash.begin(), messageHash.end(), '\n'), messageHash.end());
