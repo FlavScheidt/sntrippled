@@ -126,7 +126,6 @@ namespace gossipClient
             pkSend.assign(ephemeralKey);
             // std::cout << "Got node's own key" << std::endl;
 
-
             // std::string _test = "Hello World =)";
             gossip.set_message(_buffer);
             // gossip.set_message(_test);
@@ -142,12 +141,11 @@ namespace gossipClient
 
             gossip.set_hash(messageHash);
 
-
             boost::posix_time::ptime now = boost::posix_time::second_clock::universal_time();
             std::wstring ws(FormatTime(now));
             std::wcout << ws;
             // Log format is "time | thread | handler | received/sent | orign/destination | data"
-            std::cout << pthread_self() << "| gRPC-Client | sent | GossipSub | " << messageHash << " | " << pkSend << std::endl;
+            std::cout << " | " << pthread_self() << " | gRPC-Client | sent | GossipSub | " << messageHash << " | " << pkSend << std::endl;
 
 
             // Container for the data we expect from the server.
@@ -156,9 +154,6 @@ namespace gossipClient
             // Context for the client. It could be used to convey extra information to
             // the server and/or tweak certain RPC behaviors.
             ClientContext context;
-
-            // Overwrite the call's compression algorithm to DEFLATE.
-            // context.set_compression_algorithm(GRPC_COMPRESS_DEFLATE);
 
             // The actual RPC.
             Status status = stub_->toLibP2P(&context, gossip, &control);

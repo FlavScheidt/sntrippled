@@ -210,11 +210,10 @@ namespace gossipServer
 
             ptime now = second_clock::universal_time();
             std::wstring ws(FormatTime(now));
-            // std::wcout << ws << std::endl;
 
             std::string bufferToPrint = boost::beast::buffers_to_string(read_buffer_grpc.data());
             // bufferToPrint.erase(std::remove(bufferToPrint.begin(), bufferToPrint.end(), '|'), bufferToPrint.end());
-            bufferToPrint.erase(std::remove(bufferToPrint.begin(), bufferToPrint.end(), '\n'), bufferToPrint.end());
+            // bufferToPrint.erase(std::remove(bufferToPrint.begin(), bufferToPrint.end(), '\n'), bufferToPrint.end());
 
             //Hin is zero just because today is tuesday
             //peerObject is the handler
@@ -226,7 +225,6 @@ namespace gossipServer
             //Get the validator key from the message itself
             auto validator_key = static_cast<std::string>(gossip.validator_key());
             validator_key.erase(std::remove(validator_key.begin(), validator_key.end(), '\n'), validator_key.end());
-            validator_key.erase(std::remove(validator_key.begin(), validator_key.end(), ' '), validator_key.end());
             // std::cout <<  validator_key << std::endl;
 
             std::shared_ptr<ripple::PeerImp> peerObject = ovl->peerObjs[validator_key];

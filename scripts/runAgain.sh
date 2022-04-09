@@ -39,7 +39,7 @@ mv log.out "log_${LOG_DATE}_${LOG_HOUR}_${LOG_MIN}_${LOG_SEC}.out"
 # STEP 4
 #	Rename rename grpc logs
 ###########################
-cd /root/sntrippled/grpc
+cd /root/gossipGoSnt/
 
 mv log.out "log_${LOG_DATE}_${LOG_HOUR}_${LOG_MIN}_${LOG_SEC}.out"
 #mv log_client.out "logClient_${LOG_DATE}_${LOG_HOUR}_${LOG_MIN}_${LOG_SEC}.out"

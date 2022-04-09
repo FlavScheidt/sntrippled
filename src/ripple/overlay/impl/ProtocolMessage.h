@@ -504,6 +504,8 @@ invokeProtocolMessage(
 
     if (!success)
         result.second = make_error_code(boost::system::errc::bad_message);
+    // else
+    //     std::cout << pthread_self() << " | Message processed" << std::endl;
 
     return result;
 }
