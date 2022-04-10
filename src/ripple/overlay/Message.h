@@ -35,6 +35,9 @@
 
 namespace ripple {
 
+    //RYCB
+const std::string currentDateTime();
+
 constexpr std::size_t maximiumMessageSize = megabytes(64);
 
 // VFALCO NOTE If we forward declare Message and write out shared_ptr

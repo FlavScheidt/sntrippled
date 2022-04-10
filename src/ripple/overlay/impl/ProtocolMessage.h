@@ -361,7 +361,7 @@ invokeProtocolMessage(
     // protocol_error) and signal an error.
     if (!header)
     {   
-        std::cout << pthread_self()  << "|"  << "Could not parse header" <<std::endl;
+        // std::cout << pthread_self()  << "|"  << "Could not parse header" <<std::endl;
         return result;
     }
 
@@ -373,7 +373,7 @@ invokeProtocolMessage(
         header->uncompressed_size > maximiumMessageSize)
     {
         result.second = make_error_code(boost::system::errc::message_size);
-        std::cout << pthread_self()  << "|"  << "Message too big" <<std::endl;
+        // std::cout << pthread_self()  << "|"  << "Message too big" <<std::endl;
         return result;
     }
 
@@ -382,7 +382,7 @@ invokeProtocolMessage(
         header->algorithm != compression::Algorithm::None)
     {
         result.second = make_error_code(boost::system::errc::protocol_error);
-        std::cout << pthread_self()  << "|"  << "Message is compressed" << std::endl;
+        // std::cout << pthread_self()  << "|"  << "Message is compressed" << std::endl;
         return result;
     }
 
@@ -391,7 +391,7 @@ invokeProtocolMessage(
     if (header->total_wire_size > size)
     {
         hint = header->total_wire_size - size;
-        std::cout << pthread_self()  << "|"  << "We don't have the whole message" <<std::endl;
+        // std::cout << pthread_self()  << "|"  << "We don't have the whole message" <<std::endl;
         return result;
     }
 
