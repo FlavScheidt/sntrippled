@@ -134,18 +134,18 @@ namespace gossipServer
     }
 
 
-    std::wstring 
-    FormatTime(boost::posix_time::ptime now)
-    {
-      using namespace boost::posix_time;
-      static std::locale loc(std::wcout.getloc(),
-                             new wtime_facet(L"%Y%m%d_%H%M%S"));
+    // std::wstring 
+    // FormatTime(boost::posix_time::ptime now)
+    // {
+    //   using namespace boost::posix_time;
+    //   static std::locale loc(std::wcout.getloc(),
+    //                          new wtime_facet(L"%Y%m%d_%H%M%S"));
 
-      std::basic_stringstream<wchar_t> wss;
-      wss.imbue(loc);
-      wss << now;
-      return wss.str();
-    }
+    //   std::basic_stringstream<wchar_t> wss;
+    //   wss.imbue(loc);
+    //   wss << now;
+    //   return wss.str();
+    // }
 
     std::string getDateTime()
     {
@@ -166,7 +166,7 @@ namespace gossipServer
 
         std::ostringstream oss;
 
-        oss << std::put_time(&bt, "%Y%m%d_%H:%M:%S"); // HH:MM:SS
+        oss << std::put_time(&bt, "%Y-%m-%d_%H:%M:%S"); // HH:MM:SS
         oss << '.' << std::setfill('0') << std::setw(3) << ms.count();
 
         return oss.str();

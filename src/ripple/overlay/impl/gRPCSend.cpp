@@ -77,17 +77,42 @@ namespace gossipClient
     {
     }
 
-    std::wstring 
-    FormatTime(boost::posix_time::ptime now)
-    {
-      using namespace boost::posix_time;
-      static std::locale loc(std::wcout.getloc(),
-                             new wtime_facet(L"%Y%m%d_%H%M%S"));
+    // std::wstring 
+    // FormatTime(boost::posix_time::ptime now)
+    // {
+    //   using namespace boost::posix_time;
+    //   static std::locale loc(std::wcout.getloc(),
+    //                          new wtime_facet(L"%Y%m%d_%H%M%S"));
 
-      std::basic_stringstream<wchar_t> wss;
-      wss.imbue(loc);
-      wss << now;
-      return wss.str();
+    //   std::basic_stringstream<wchar_t> wss;
+    //   wss.imbue(loc);
+    //   wss << now;
+    //   return wss.str();
+    // }
+
+    std::string getDateTime()
+    {
+        using namespace std::chrono;
+
+        // get current time
+        auto now = system_clock::now();
+
+        // get number of milliseconds for the current second
+        // (remainder after division into seconds)
+        auto ms = duration_cast<milliseconds>(now.time_since_epoch()) % 1000;
+
+        // convert to std::time_t in order to convert to std::tm (broken time)
+        auto timer = system_clock::to_time_t(now);
+
+        // convert to broken time
+        std::tm bt = *std::localtime(&timer);
+
+        std::ostringstream oss;
+
+        oss << std::put_time(&bt, "%Y-%m-%d_%H:%M:%S"); // HH:MM:SS
+        oss << '.' << std::setfill('0') << std::setw(3) << ms.count();
+
+        return oss.str();
     }
 
     int 
@@ -141,11 +166,11 @@ namespace gossipClient
 
             gossip.set_hash(messageHash);
 
-            boost::posix_time::ptime now = boost::posix_time::second_clock::universal_time();
-            std::wstring ws(FormatTime(now));
-            std::wcout << ws;
+            // boost::posix_time::ptime now = boost::posix_time::second_clock::universal_time();
+            // std::wstring ws(FormatTime(now));
+            // std::wcout << ws;
             // Log format is "time | thread | handler | received/sent | orign/destination | data"
-            std::cout << " | " << pthread_self() << " | gRPC-Client | sent | GossipSub | " << messageHash << " | " << pkSend << std::endl;
+            std::cout << getDateTime() << " | " << pthread_self() << " | gRPC-Client | sent | GossipSub | " << messageHash << " | " << pkSend << std::endl;
 
 
             // Container for the data we expect from the server.
