@@ -166,7 +166,7 @@ namespace gossipServer
 
         std::ostringstream oss;
 
-        oss << std::put_time(&bt, "%H:%M:%S"); // HH:MM:SS
+        oss << std::put_time(&bt, "%Y%m%d_%H:%M:%S"); // HH:MM:SS
         oss << '.' << std::setfill('0') << std::setw(3) << ms.count();
 
         return oss.str();
