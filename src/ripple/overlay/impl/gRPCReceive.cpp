@@ -2,6 +2,9 @@
 
 #include <sstream>
 #include <iostream>
+#include <chrono>
+#include <ctime>
+#include <iomanip>
 
 // #include <boost/property_tree/json_parser.hpp>
 // #include <boost/json.hpp>
@@ -144,6 +147,31 @@ namespace gossipServer
       return wss.str();
     }
 
+    std::string getDateTime()
+    {
+        using namespace std::chrono;
+
+        // get current time
+        auto now = system_clock::now();
+
+        // get number of milliseconds for the current second
+        // (remainder after division into seconds)
+        auto ms = duration_cast<milliseconds>(now.time_since_epoch()) % 1000;
+
+        // convert to std::time_t in order to convert to std::tm (broken time)
+        auto timer = system_clock::to_time_t(now);
+
+        // convert to broken time
+        std::tm bt = *std::localtime(&timer);
+
+        std::ostringstream oss;
+
+        oss << std::put_time(&bt, "%H:%M:%S"); // HH:MM:SS
+        oss << '.' << std::setfill('0') << std::setw(3) << ms.count();
+
+        return oss.str();
+    }
+
     void 
     GossipMessageImpl::CallData::Proceed(void *  overlay) 
     {
@@ -208,8 +236,8 @@ namespace gossipServer
             bytes_transferred = boost::asio::buffer_copy(read_buffer_grpc.prepare(gossip.message().size()), boost::asio::buffer(gossip.message()));
             read_buffer_grpc.commit(bytes_transferred);
 
-            ptime now = second_clock::universal_time();
-            std::wstring ws(FormatTime(now));
+            // ptime now = second_clock::universal_time();
+            // std::wstring ws(FormatTime(now));
 
             std::string bufferToPrint = boost::beast::buffers_to_string(read_buffer_grpc.data());
             // bufferToPrint.erase(std::remove(bufferToPrint.begin(), bufferToPrint.end(), '|'), bufferToPrint.end());
@@ -230,15 +258,15 @@ namespace gossipServer
             std::shared_ptr<ripple::PeerImp> peerObject = ovl->peerObjs[validator_key];
 
             auto peerID_rcv = peerObject->id();
-            // std::cout << "RYCB Peer selected: " << peerID_rcv << std::endl;
+            std::cout << "RYCB Peer selected: " << peerID_rcv << std::endl;
 
             // std::string messageHash = sw::sha512::calculate(&bufferToPrint, sizeof(bufferToPrint));
             // messageHash.erase(std::remove(messageHash.begin(), messageHash.end(), '\n'), messageHash.end());
             auto messageHash = static_cast<std::string>(gossip.hash());
 
             // Log format is "time | thread | peer | handler | received/sent | orign/destination | data"
-            std::wcout << ws;
-            std::cout << "|" << pthread_self() << " | " << peerID_rcv << " | gRPC-Server | received | GossipSub | " << messageHash  << " | " <<  validator_key << std::endl;
+            // std::wcout << ws;
+            std::cout << getDateTime() << "|" << pthread_self() << " | " << peerID_rcv << " | gRPC-Server | received | GossipSub | " << messageHash  << " | " <<  validator_key << std::endl;
 
             control.set_stream(1); //set the response, it changes if an error occurs
             //Read and process buffer, unless there is an error on invokeProtoclMessage
