@@ -1,6 +1,7 @@
 # Attention
 
-This is a modified version of the rippled 1.7 validator protocol. Do not use it.
+This is a modified version of the rippled 1.7 validator protocol forked from version 1.7.
+The modifications allow the connection of different broadcast frameworks for studying the strategies to enhance the performance of the XRPL directly on the overlay.
 
 # The XRP Ledger
 
