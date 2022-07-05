@@ -1,7 +1,9 @@
 # Attention
 
-This is a modified version of the rippled 1.7 validator protocol forked from version 1.7.
+This is a modified version of the rippled 1.7 validator.
 The modifications allow the connection of different broadcast frameworks for studying the strategies to enhance the performance of the XRPL directly on the overlay.
+
+DO NOT DEPLOY TO PRODUCTION. If you do, it will not work, since the exchange of validations is made trough a tunnel that requires the use of a dissemination protocol connected via gRPC.
 
 # The XRP Ledger
 
