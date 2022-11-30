@@ -1,0 +1,15 @@
+[Unit]
+Description=Ripple Daemon
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/root/sntrippled/my_build/rippled --net --silent --conf=/root/config/rippled.cfg --quorum 15
+Restart=on-failure
+#User=rippled
+#Group=rippled
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target
