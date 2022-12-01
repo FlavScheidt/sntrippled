@@ -612,7 +612,7 @@ std::string execShell(const char* cmd)
 void
 OverlayImpl::onStart()
 {
-    auto shellResult = execShell("./rippled server_info --conf /opt/local/etc/rippled.cfg | cat | grep \"pubkey_node\" | cut -d \":\" -f2 | cut -d \"\\\"\" -f2 > key.out");
+    auto shellResult = execShell("/opt/local/bin/rippled server_info | cat | grep \"pubkey_node\" | cut -d \":\" -f2 | cut -d \"\\\"\" -f2 > key.out");
     auto const timer = std::make_shared<Timer>(*this);
     std::lock_guard lock(mutex_);
     list_.emplace(timer.get(), timer);
