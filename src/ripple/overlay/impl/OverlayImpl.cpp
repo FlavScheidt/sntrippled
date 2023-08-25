@@ -1261,8 +1261,22 @@ OverlayImpl::findPeerByPublicKey(PublicKey const& pubKey)
 void
 OverlayImpl::broadcast(protocol::TMProposeSet& m)
 {
+
+     //RYCB
+    //We donly need to send once
+    //So I have a dirty logics to make it only send once
     auto const sm = std::make_shared<Message>(m, protocol::mtPROPOSE_LEDGER);
-    for_each([&](std::shared_ptr<PeerImp>&& p) { p->send(sm); });
+
+    // for_each([&](std::shared_ptr<PeerImp>&& p) { p->send(sm); });
+
+    //Gets fisrt object from the peers list, and thats the one that will send the message to the RPC server
+    
+    auto p = peerObjs.begin()->second;
+    // std::cout << "Found the object" << std::endl;
+
+    p->send(sm);
+    // std::cout << "Called send" << std::endl;
+
 }
 
 std::set<Peer::id_t>
@@ -1271,16 +1285,19 @@ OverlayImpl::relay(
     uint256 const& uid,
     PublicKey const& validator)
 {
-    if (auto const toSkip = app_.getHashRouter().shouldRelay(uid))
-    {
-        auto const sm =
-            std::make_shared<Message>(m, protocol::mtPROPOSE_LEDGER, validator);
-        for_each([&](std::shared_ptr<PeerImp>&& p) {
-            if (toSkip->find(p->id()) == toSkip->end())
-                p->send(sm);
-        });
-        return *toSkip;
-    }
+
+    //RYCB 24aug2023
+    //Gossipsub is relaying them for us, we dont need to do this
+    // if (auto const toSkip = app_.getHashRouter().shouldRelay(uid))
+    // {
+    //     auto const sm =
+    //         std::make_shared<Message>(m, protocol::mtPROPOSE_LEDGER, validator);
+    //     for_each([&](std::shared_ptr<PeerImp>&& p) {
+    //         if (toSkip->find(p->id()) == toSkip->end())
+    //             p->send(sm);
+    //     });
+    //     return *toSkip;
+    // }
     return {};
 }
 
@@ -1291,19 +1308,21 @@ OverlayImpl::broadcast(protocol::TMValidation& m)
     //RYCB
     //We donly need to send once
     //So I have a dirty logics to make it only send once
-    // for_each([sm](std::shared_ptr<PeerImp>&& p) 
-    //     { 
-    //         p->send(sm); 
-    //     }
-    // );
+    //24aug2023
+    //Changing to proposals. Uncomment
+    for_each([sm](std::shared_ptr<PeerImp>&& p) 
+        { 
+            p->send(sm); 
+        }
+    );
 
     //Gets fisrt object from the peers list, and thats the one that will send the message to the RPC server
+    //24aug commented this part
+    // auto p = peerObjs.begin()->second;
+    // // std::cout << "Found the object" << std::endl;
 
-    auto p = peerObjs.begin()->second;
-    // std::cout << "Found the object" << std::endl;
-
-    p->send(sm);
-    // std::cout << "Called send" << std::endl;
+    // p->send(sm);
+    // // std::cout << "Called send" << std::endl;
 
 }
 
@@ -1316,16 +1335,18 @@ OverlayImpl::relay(
 
     //RYCB
     //Gossipsub is relaying them for us, we dont need to do this
-    // if (auto const toSkip = app_.getHashRouter().shouldRelay(uid))
-    // {
-    //     auto const sm =
-    //         std::make_shared<Message>(m, protocol::mtVALIDATION, validator);
-    //     for_each([&](std::shared_ptr<PeerImp>&& p) {
-    //         if (toSkip->find(p->id()) == toSkip->end())
-    //             p->send(sm);
-    //     });
-    //     return *toSkip;
-    // }
+    // 24aug2023
+    // We are once again relaying validations
+    if (auto const toSkip = app_.getHashRouter().shouldRelay(uid))
+    {
+        auto const sm =
+            std::make_shared<Message>(m, protocol::mtVALIDATION, validator);
+        for_each([&](std::shared_ptr<PeerImp>&& p) {
+            if (toSkip->find(p->id()) == toSkip->end())
+                p->send(sm);
+        });
+        return *toSkip;
+    }
     return {};
 }
 

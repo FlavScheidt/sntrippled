@@ -286,6 +286,9 @@ PeerImp::send(std::shared_ptr<Message> const& m)
     //Sends to the gRPC server to be sent using gossipsub
     //Otherwise, sends using asio
 
+    //24Aug2023
+    // Changing from validations to proposals (33)
+
     //16mar modification
     //Cant put the message on the queue when it is a validation
     //Otherwise it will be sent anyway
@@ -294,7 +297,8 @@ PeerImp::send(std::shared_ptr<Message> const& m)
 
     auto messageType = m->getMessageType();
     auto validator = m->getValidatorKey();
-    if (messageType == 41)
+    // if (messageType == 41)
+    if (messageType == 33)
     {
        if (!validator)
        {
